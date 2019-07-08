@@ -1,12 +1,15 @@
 const crypto = require('crypto');
+const SessionList = require('./SessionList');
 
 class Session {
     constructor(connection) {
         this.receivedData = "";
 
         this.id = crypto.randomBytes(20).toString('hex');
+        SessionList.registerSession(this);
 
         this.msgNum = 0;
+
 
         // connection is open
         this.active = false;
@@ -14,41 +17,11 @@ class Session {
         this.bindConnection(connection);
     }
 
-    bindConnection(connection) {
-        this.connection = connection;
-        //Init 
-        this.connection.setEncoding('utf8');
-
-        this.connection.on('end', this.unbindConnection.bind(this));
-        this.connection.on('data', this.dataRead.bind(this));
-        this.active = true;
-    }
-    ;
-            unbindConnection() {
-        this.active = false;
-    }
-
-    dataRead(msg) {
-        this.receivedData += msg;
-
-        //parse first json found
-        //{...blabla{}...}
-        var parseResult = Session.getFirstJson(this.receivedData);
-        while (parseResult[0] !== null) {
-            this.receivedData = parseResult[1];
-            // json was parsed, do something with it
-            var messageObject = parseResult[0];
-            this.useMessage(messageObject);
-
-            // parse next json (msg)
-            parseResult = Session.getFirstJson(this.receivedData);
-        }
-    }
-    ;
-            useMessage(messageObject) {
+    useMessage(messageObject) {
         switch (messageObject.type) {
             case 'rejoinSession':
-
+                this.rejoinSession(messageObject);
+                break;
             case 'ping':
                 this.send('pong');
                 break;
@@ -77,6 +50,59 @@ class Session {
     sendHello() {
         this.send("hello", {'motd': 'May the force be with you'});
     }
+
+    rejoinSession(messageObject) {
+        if (typeof (messageObject.sessionId) !== 'string') {
+            return this.send("error", {errorType: 'sessionId not present'});
+        }
+        var session = SessionList.findSession(messageObject.sessionId);
+        if (session === null) {
+            return this.send("error", {errorType: 'session does not exist'});
+        }
+        if (session.active) {
+            return this.send("error", {errorType: 'session is active'});
+        }
+        var connection = this.connection;
+        this.unbindConnection();
+        SessionList.unregisterSession(this);
+
+        session.bindConnection(connection);
+        
+        session.send("sessionRejoined");
+    }
+
+    bindConnection(connection) {
+        this.connection = connection;
+        //Init 
+        this.connection.setEncoding('utf8');
+
+        this.connection.on('end', this.unbindConnection.bind(this));
+        this.connection.on('data', this.dataRead.bind(this));
+        this.active = true;
+    }
+
+    unbindConnection() {
+        this.active = false;
+        this.connection.removeListener('end', this.unbindConnection.bind(this));
+        this.connection.removeListener('data', this.dataRead.bind(this));
+    }
+
+    dataRead(msg) {
+        this.receivedData += msg;
+
+        //parse first json found
+        //{...blabla{}...}
+        var parseResult = Session.getFirstJson(this.receivedData);
+        while (parseResult[0] !== null) {
+            this.receivedData = parseResult[1];
+            // json was parsed, do something with it
+            var messageObject = parseResult[0];
+            this.useMessage(messageObject);
+
+            // parse next json (msg)
+            parseResult = Session.getFirstJson(this.receivedData);
+        }
+    }
 }
 
 Session.getFirstJson = function (str) {
@@ -104,7 +130,6 @@ Session.getFirstJson = function (str) {
 
 Session.create = function (c) {
     var session = new Session(c);
-
 
     session.sendHello();
 };

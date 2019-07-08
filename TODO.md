@@ -11,7 +11,7 @@
  * type: 'joinGameSession'
     - password: null/string
  * type: 'rejoinSession' (potom co se spojeni client-server prerusilo)
-    - sessionHandle: string
+    - sessionId: string
 
  
 [create] [join]
