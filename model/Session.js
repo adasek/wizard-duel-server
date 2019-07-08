@@ -1,5 +1,12 @@
 const crypto = require('crypto');
+
+const atob = require('atob');
+  
 const SessionList = require('./SessionList');
+
+//loading svg
+const fs = require('fs');
+const util = require('util');
 
 class Session {
     constructor(connection) {
@@ -15,6 +22,45 @@ class Session {
         this.active = false;
 
         this.bindConnection(connection);
+
+        //temporary:
+        setTimeout(async function () {
+            this.createGameSession('demo');
+        }.bind(this), 10000);
+    }
+
+    //Temporary to be moved into GameSession
+    async getAllSpells() {
+        var spells = [];
+        var names = ['Protego', 'Lumos', 'Wingardium Leviosa', 'Kal Vas Flam', 'Imperius', 'Reparo'];
+        var types = ['defense', 'support', 'support', 'attack', 'attack', 'support'];
+        const readFile = util.promisify(fs.readFile);
+        for (var i = 0; i < 6; i++) {
+            var svgContent = await readFile('spells/spell' + i + '_ready.svg');
+            spells.push({
+                "name": names[i],
+                "svg": atob(svgContent),
+                "type": types[i]
+            });
+        }
+        return spells;
+    }
+
+    async createGameSession(modeName) {
+        var allSpells = await this.getAllSpells();
+        if (modeName === 'demo') {
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            //start game session
+
+            this.send("prepareSpells", {"spells": allSpells, "timeout": 5000});
+            while (true) {
+                await sleep(5000);
+                this.send("turnStart", {spell: allSpells[Math.round(Math.random() * 6)]});
+            }
+        }
+
     }
 
     useMessage(messageObject) {
@@ -67,7 +113,7 @@ class Session {
         SessionList.unregisterSession(this);
 
         session.bindConnection(connection);
-        
+
         session.send("sessionRejoined");
     }
 
