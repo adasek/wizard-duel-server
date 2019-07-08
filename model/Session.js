@@ -1,7 +1,13 @@
+const crypto = require('crypto');
+
 class Session {
     constructor(connection) {
         this.receivedData = "";
         this.connection = connection;
+
+        this.id = crypto.randomBytes(20).toString('hex');
+
+        this.msgNum = 0;
     }
 
     useMessage(messageObject) {
@@ -15,10 +21,22 @@ class Session {
         }
     }
 
-    send(type) {
-        var msg = {"time":Date.now(),"type": type};
+    send(type, data) {
+        var msg = {};
+        msg.time = Date.now();
+        msg.sessionId = this.id;
+        msg.msgNum = this.msgNum++;
+        msg.type = type;
+
+        for (var key in data) {
+            msg[key] = data[key];
+        }
         this.connection.write(JSON.stringify(msg));
         this.connection.write('\r\n');
+    }
+
+    sendHello() {
+        this.send("hello", {'motd':'May the force be with you'});
     }
 }
 
@@ -63,6 +81,8 @@ Session.create = function (c) {
 
         }
     });
+
+    session.sendHello();
 };
 
 module.exports = Session;

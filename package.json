@@ -11,7 +11,7 @@
     "licenses": "none",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
-    },    
+    },
     "repository": {
         "type": "git",
         "url": "git://github.com/YOUR_LOGIN/wizard-duel-server.git"
