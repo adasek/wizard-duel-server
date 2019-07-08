@@ -11,13 +11,15 @@ class Session {
     }
 
     useMessage(messageObject) {
-        if (messageObject.type === "ping") {
-            //write back pong
-            this.send("pong");
-
-        } else {
-            //write back err   
-            this.send("err");
+        switch (messageObject.type) {
+            case 'ping':
+                this.send('pong');
+                break;
+            case 'parseError':
+                this.send('error', {errorType: 'parseError'});
+                break;
+            default:
+                this.send('error', {errorType: 'unknownMessage'});
         }
     }
 
@@ -36,7 +38,7 @@ class Session {
     }
 
     sendHello() {
-        this.send("hello", {'motd':'May the force be with you'});
+        this.send("hello", {'motd': 'May the force be with you'});
     }
 }
 
@@ -50,7 +52,13 @@ Session.getFirstJson = function (str) {
             case '}':
                 if (--depth === 0) {
                     //found json from 0 to i
-                    return [JSON.parse(str.substring(0, i + 1)), str.substring(i + 1)];
+                    var msgObj = {}
+                    try {
+                        msgObj = JSON.parse(str.substring(0, i + 1))
+                    } catch (e) {
+                        msgObj = {'type': 'parseError'}
+                    }
+                    return [msgObj, str.substring(i + 1)];
                 }
         }
     }
