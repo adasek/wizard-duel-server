@@ -3,15 +3,52 @@ const crypto = require('crypto');
 class Session {
     constructor(connection) {
         this.receivedData = "";
-        this.connection = connection;
 
         this.id = crypto.randomBytes(20).toString('hex');
 
         this.msgNum = 0;
+
+        // connection is open
+        this.active = false;
+
+        this.bindConnection(connection);
     }
 
-    useMessage(messageObject) {
+    bindConnection(connection) {
+        this.connection = connection;
+        //Init 
+        this.connection.setEncoding('utf8');
+
+        this.connection.on('end', this.unbindConnection.bind(this));
+        this.connection.on('data', this.dataRead.bind(this));
+        this.active = true;
+    }
+    ;
+            unbindConnection() {
+        this.active = false;
+    }
+
+    dataRead(msg) {
+        this.receivedData += msg;
+
+        //parse first json found
+        //{...blabla{}...}
+        var parseResult = Session.getFirstJson(this.receivedData);
+        while (parseResult[0] !== null) {
+            this.receivedData = parseResult[1];
+            // json was parsed, do something with it
+            var messageObject = parseResult[0];
+            this.useMessage(messageObject);
+
+            // parse next json (msg)
+            parseResult = Session.getFirstJson(this.receivedData);
+        }
+    }
+    ;
+            useMessage(messageObject) {
         switch (messageObject.type) {
+            case 'rejoinSession':
+
             case 'ping':
                 this.send('pong');
                 break;
@@ -67,28 +104,7 @@ Session.getFirstJson = function (str) {
 
 Session.create = function (c) {
     var session = new Session(c);
-    c.setEncoding('utf8');
 
-    c.on('end', function () {
-        console.log('connection/socket closed');
-    });
-    c.on('data', function (msg) {
-        session.receivedData += msg;
-
-        //parse first json found
-        //{...blabla{}...}
-        var parseResult = Session.getFirstJson(session.receivedData);
-        while (parseResult[0] !== null) {
-            session.receivedData = parseResult[1];
-            // json was parsed, do something with it
-            var messageObject = parseResult[0];
-            session.useMessage(messageObject);
-
-            // parse next json (msg)
-            parseResult = Session.getFirstJson(session.receivedData);
-
-        }
-    });
 
     session.sendHello();
 };
