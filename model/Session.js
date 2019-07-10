@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const atob = require('atob');
-  
+
 const SessionList = require('./SessionList');
 
 //loading svg
@@ -22,6 +22,8 @@ class Session {
         this.active = false;
 
         this.bindConnection(connection);
+
+        this.msgQueue = [];
 
         //temporary:
         setTimeout(async function () {
@@ -89,8 +91,33 @@ class Session {
         for (var key in data) {
             msg[key] = data[key];
         }
-        this.connection.write(JSON.stringify(msg));
-        this.connection.write('\r\n');
+
+        while (this.msgQueue.length > 0) {
+            var oldMsg = this.msgQueue.shift();
+            this._send(oldMsg);
+        }
+
+        this._send(msg);
+    }
+
+    _send(msg) {
+        if (!this.active) {
+            this.enqueueMessage(msg);
+            return;
+        }
+        try {
+            this.connection.write(JSON.stringify(msg));
+            this.connection.write('\r\n');
+        } catch (e) {
+            //connection lost?
+            console.warn(e);
+            this.unbindConnection();
+            this.enqueueMessage(msg);
+        }
+    }
+
+    enqueueMessage(msg) {
+        this.msgQueue.push(msg);
     }
 
     sendHello() {
