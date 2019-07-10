@@ -45,7 +45,6 @@ class GameSession {
             spell.svg = atob(svgContent);
         }
 
-        console.log(spells);
         return spells;
     }
 
