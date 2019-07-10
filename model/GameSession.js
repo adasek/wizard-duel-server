@@ -86,19 +86,19 @@ class GameSession {
 
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accouracy:0.91}
     spellCast(opts, callback) {
-       //todo: check if spellId agrees with spellsSelectedArray
+        //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(spellId);
-            
+
         var amount = 50 * opts.accuracy;
-        if(spell.type == "atack"){
+        if (spell.type == "atack") {
             this.oponentLifeChange = -amount;
             this.oponentLife -= amount;
-        }else if(spell.type == "defense"){
+        } else if (spell.type == "defense") {
             this.playerLifeChange = -(50 - amount);
-            this.playerLife -= (50-amount);
-        }else{
+            this.playerLife -= (50 - amount);
+        } else {
             //no func yet
-            
+
         }
 
     }
@@ -152,22 +152,22 @@ GameSession.create = async function (opts) {
         while (true) {
             //init selected spells
             gameSession.setPreparedSpellsAmount(5);
-                this.playerLife=200;
-                this.oponentLife=200;
-            gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": this.prepareSpellsNum, "timeout": 10000});
+            gameSession.playerLife = 200;
+            gameSession.oponentLife = 200;
+            gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000});
             await sleep(10000);
-            for (var i = 0; i < this.prepareSpellsNum; i++) {
-                gameSession.send("turnStart", {spell: this.findSpell(this.prepareSpellsArray[i]), "timeout": 5000});
-                this.playerLifeChange=0;
-                this.oponentLifeChange=0;
+            for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
+                gameSession.send("turnStart", {spell: gameSession.findSpell(gameSession.prepareSpellsArray[i]), "timeout": 5000});
+                gameSession.playerLifeChange = 0;
+                gameSession.oponentLifeChange = 0;
                 await sleep(5000);
-                gameSession.send("turnEnd",{player:{
-                        life:gameSession.playerLife,
-                        lifeChange:gameSession.playerLifeChange
-                    },oponents:[
-                        {id:'dummy',
-                            life:gameSession.oponentLife,
-                            lifeChange:gameSession.oponentLifeChange
+                gameSession.send("turnEnd", {player: {
+                        life: gameSession.playerLife,
+                        lifeChange: gameSession.playerLifeChange
+                    }, oponents: [
+                        {id: 'dummy',
+                            life: gameSession.oponentLife,
+                            lifeChange: gameSession.oponentLifeChange
                         }]});
             }
         }
