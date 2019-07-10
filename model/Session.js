@@ -25,10 +25,12 @@ class Session {
         setTimeout(async function () {
             this.createGameSession('demo');
         }.bind(this), 3000);
+
+        this.gameSession = null;
     }
 
     async createGameSession(modeName) {
-        await GameSession.create({'session': this, 'gameMode': {'name': modeName}});
+        this.gameSession = await GameSession.create({'session': this, 'gameMode': {'name': modeName}});
     }
 
     useMessage(messageObject) {
@@ -38,6 +40,12 @@ class Session {
                 break;
             case 'ping':
                 this.send('pong');
+                break;
+            case 'spellCast':
+                this.gameSession.spellCast(messageObject, this.send);
+                break;
+            case 'spellsSelected':
+                this.gameSession.spellsSelected(messageObject, this.send);
                 break;
             case 'parseError':
                 this.send('error', {errorType: 'parseError'});
@@ -136,8 +144,8 @@ class Session {
             this.receivedData = parseResult[1];
             // json was parsed, do something with it
             var messageObject = parseResult[0];
+             console.log(messageObject);
             this.useMessage(messageObject);
-
             // parse next json (msg)
             parseResult = Session.getFirstJson(this.receivedData);
         }

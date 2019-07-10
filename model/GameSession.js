@@ -15,6 +15,12 @@ class GameSession {
     constructor(opts) {
         this.opts = opts;
         //this.opts.gameMode.name
+
+        this.state = 'init';
+        this.setPreparedSpellsAmount(1);
+
+        this.spellBook = null;
+        setTimeout(this.getAllSpells.bind(this), 0);
     }
 
     slugify(s) {
@@ -23,8 +29,11 @@ class GameSession {
         s = s.toLowerCase();
         return s;
     }
-    //Temporary to be moved into GameSession
+
     async getAllSpells() {
+        if (this.spellBook != null) {
+            return this.spellBook;
+        }
 
         var spellsArray = [{
                 name: 'Protego',
@@ -57,6 +66,7 @@ class GameSession {
             spell.svg = atob(svgContent);
         }
 
+        this.spellBook = spellsArray;
         return spellsArray;
     }
 
@@ -65,24 +75,101 @@ class GameSession {
     }
 
     send(msgType, data) {
+        if (msgType === 'prepareSpells') {
+            this.state = 'prepareSpells';
+        }
+        if (msgType === 'turnStart') {
+            this.state = 'turn';
+        }
         return this.opts.session.send(msgType, data);
+    }
+
+    //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accouracy:0.91}
+    spellCast(opts, callback) {
+       //todo: check if spellId agrees with spellsSelectedArray
+        var spell = this.findSpell(spellId);
+            
+        var amount = 50 * opts.accuracy;
+        if(spell.type == "atack"){
+            this.oponentLifeChange = -amount;
+            this.oponentLife -= amount;
+        }else if(spell.type == "defense"){
+            this.playerLifeChange = -(50 - amount);
+            this.playerLife -= (50-amount);
+        }else{
+            //no func yet
+            
+        }
+
+    }
+
+    findSpell(spellId) {
+        if (this.spellBook === null) {
+            throw "SpellBook not loaded";
+        }
+        for (const spell in this.spellBook) {
+            if (spell['id'] === spellId) {
+                return spell;
+            }
+        }
+
+        return null;
+    }
+
+    //{type:'spellsSelected',spells:['protego','kal_vas_flam',null,null,'protego']}
+    spellsSelected(opts, callback) {
+        if (this.state !== "prepareSpells") {
+            return callback("error", {msg: 'notInPrepareSpellsState'});
+        }
+        if (opts.spells.length !== this.prepareSpellsNum) {
+            return callback("error", {msg: 'badNumberOfSpells'});
+        }
+        for (var i = 0; i < this.prepareSpellsArray.length; i++) {
+            //find spell by id
+            this.prepareSpellsArray[i] = this.findSpell(opts.spells[i]);
+        }
+    }
+
+    setPreparedSpellsAmount(num) {
+        this.prepareSpellsNum = num;
+        this.prepareSpellsArray = [];
+        for (var i = 0; i < num; i++) {
+            this.prepareSpellsArray.push(null);
+        }
     }
 }
 
 GameSession.create = async function (opts) {
     var gameSession = new GameSession(opts);
+    await gameSession.getAllSpells();
 
-    var allSpells = await gameSession.getAllSpells();
     if (gameSession.modeName() === 'demo') {
+
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-        //start game session
 
-        gameSession.send("prepareSpells", {"spells": allSpells, "spellsAmount": 5, "timeout": 5000});
         while (true) {
-            await sleep(5000);
-            gameSession.send("turnStart", {spell: allSpells[Math.floor(Math.random() * allSpells.length)]});
+            //init selected spells
+            gameSession.setPreparedSpellsAmount(5);
+                this.playerLife=200;
+                this.oponentLife=200;
+            gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": this.prepareSpellsNum, "timeout": 10000});
+            await sleep(10000);
+            for (var i = 0; i < this.prepareSpellsNum; i++) {
+                gameSession.send("turnStart", {spell: this.findSpell(this.prepareSpellsArray[i]), "timeout": 5000});
+                this.playerLifeChange=0;
+                this.oponentLifeChange=0;
+                await sleep(5000);
+                gameSession.send("turnEnd",{player:{
+                        life:gameSession.playerLife,
+                        lifeChange:gameSession.playerLifeChange
+                    },oponents:[
+                        {id:'dummy',
+                            life:gameSession.oponentLife,
+                            lifeChange:gameSession.oponentLifeChange
+                        }]});
+            }
         }
     }
     return gameSession;
