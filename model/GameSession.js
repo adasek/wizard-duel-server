@@ -156,7 +156,7 @@ GameSession.create = async function (opts) {
                 gameSession.playerLife = 200;
                 gameSession.oponentLife = 200;
                 gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000});
-                await sleep(10000);
+                await sleep(15000);
                 for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
                     gameSession.send("turnStart", {spell: gameSession.findSpell(gameSession.prepareSpellsArray[i]), "timeout": 5000});
                     gameSession.playerLifeChange = 0;
@@ -170,6 +170,7 @@ GameSession.create = async function (opts) {
                                 life: gameSession.oponentLife,
                                 lifeChange: gameSession.oponentLifeChange
                             }]});
+                    await sleep(5000);
                 }
             }
         }
