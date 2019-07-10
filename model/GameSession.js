@@ -107,7 +107,7 @@ class GameSession {
         if (this.spellBook === null) {
             throw "SpellBook not loaded";
         }
-        for (const spell in this.spellBook) {
+        for (const spell of this.spellBook) {
             if (spell['id'] === spellId) {
                 return spell;
             }
