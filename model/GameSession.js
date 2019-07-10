@@ -87,7 +87,7 @@ class GameSession {
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accouracy:0.91}
     spellCast(opts, callback) {
         //todo: check if spellId agrees with spellsSelectedArray
-        var spell = this.findSpell(spellId);
+        var spell = this.findSpell(opts.spellId);
 
         var amount = 50 * opts.accuracy;
         if (spell.type == "atack") {
@@ -158,7 +158,7 @@ GameSession.create = async function (opts) {
                 gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000});
                 await sleep(15000);
                 for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
-                    gameSession.send("turnStart", {spell: gameSession.findSpell(gameSession.prepareSpellsArray[i]), "timeout": 5000});
+                    gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000});
                     gameSession.playerLifeChange = 0;
                     gameSession.oponentLifeChange = 0;
                     await sleep(5000);
