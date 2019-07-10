@@ -17,19 +17,25 @@ class GameSession {
         //this.opts.gameMode.name
     }
 
+    slugify(s) {
+        s = s.replace(GameSession._slugify_strip_re, '').trim().toLowerCase();
+        s = s.replace(GameSession._slugify_hyphenate_re, '-');
+        s = s.toLowerCase();
+        return s;
+    }
     //Temporary to be moved into GameSession
     async getAllSpells() {
 
-        var spells = [{
-                name: 'protego',
+        var spellsArray = [{
+                name: 'Protego',
                 amount: 2,
                 type: 'defense'
             }, {
-                name: 'lumos',
+                name: 'Lumos',
                 amount: 2,
                 type: 'util'
             }, {
-                name: 'kal_vas_flam',
+                name: 'Kal Vas Flam',
                 amount: 2,
                 type: 'attack'
             }];
@@ -40,12 +46,18 @@ class GameSession {
         //var types = ['defense', 'support', 'support', 'attack', 'attack', 'support'];
         const readFile = util.promisify(fs.readFile);
 
-        for (var spell of spells) {
-            var svgContent = await readFile('spells/' + spell['name'] + ".svg");
+        //generate ids from names
+        for (var spell of spellsArray) {
+            spell['id'] = this.slugify(spell['name']);
+        }
+
+        // load files
+        for (var spell of spellsArray) {
+            var svgContent = await readFile('spells/' + spell['id'] + ".svg");
             spell.svg = atob(svgContent);
         }
 
-        return spells;
+        return spellsArray;
     }
 
     modeName() {
@@ -75,5 +87,8 @@ GameSession.create = async function (opts) {
     }
     return gameSession;
 };
+
+GameSession._slugify_strip_re = /[^\w\s-]/g;
+GameSession._slugify_hyphenate_re = /[-\s]+/g;
 
 module.exports = GameSession;
