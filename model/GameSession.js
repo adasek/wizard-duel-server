@@ -88,6 +88,9 @@ class GameSession {
     spellCast(opts, callback) {
         //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(opts.spellId);
+        if(spell === null){
+            return;
+        }
 
         var amount = 50 * opts.accuracy;
         if (spell.type == "atack") {
