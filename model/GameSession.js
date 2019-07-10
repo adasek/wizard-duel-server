@@ -143,35 +143,37 @@ GameSession.create = async function (opts) {
     var gameSession = new GameSession(opts);
     await gameSession.getAllSpells();
 
-    if (gameSession.modeName() === 'demo') {
+    //async
+    setTimeout(async function () {
+        if (gameSession.modeName() === 'demo') {
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        while (true) {
-            //init selected spells
-            gameSession.setPreparedSpellsAmount(5);
-            gameSession.playerLife = 200;
-            gameSession.oponentLife = 200;
-            gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000});
-            await sleep(10000);
-            for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
-                gameSession.send("turnStart", {spell: gameSession.findSpell(gameSession.prepareSpellsArray[i]), "timeout": 5000});
-                gameSession.playerLifeChange = 0;
-                gameSession.oponentLifeChange = 0;
-                await sleep(5000);
-                gameSession.send("turnEnd", {player: {
-                        life: gameSession.playerLife,
-                        lifeChange: gameSession.playerLifeChange
-                    }, oponents: [
-                        {id: 'dummy',
-                            life: gameSession.oponentLife,
-                            lifeChange: gameSession.oponentLifeChange
-                        }]});
+            while (true) {
+                //init selected spells
+                gameSession.setPreparedSpellsAmount(5);
+                gameSession.playerLife = 200;
+                gameSession.oponentLife = 200;
+                gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000});
+                await sleep(10000);
+                for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
+                    gameSession.send("turnStart", {spell: gameSession.findSpell(gameSession.prepareSpellsArray[i]), "timeout": 5000});
+                    gameSession.playerLifeChange = 0;
+                    gameSession.oponentLifeChange = 0;
+                    await sleep(5000);
+                    gameSession.send("turnEnd", {player: {
+                            life: gameSession.playerLife,
+                            lifeChange: gameSession.playerLifeChange
+                        }, oponents: [
+                            {id: 'dummy',
+                                life: gameSession.oponentLife,
+                                lifeChange: gameSession.oponentLifeChange
+                            }]});
+                }
             }
         }
-    }
+    }, 0);
     return gameSession;
 };
 

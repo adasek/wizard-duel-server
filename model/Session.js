@@ -21,12 +21,9 @@ class Session {
 
         this.msgQueue = [];
 
-        //temporary:
-        setTimeout(async function () {
-            this.createGameSession('demo');
-        }.bind(this), 3000);
-
         this.gameSession = null;
+        //temporary:
+        setTimeout(this.createGameSession.bind(this,'demo'), 3000);
     }
 
     async createGameSession(modeName) {
@@ -42,10 +39,10 @@ class Session {
                 this.send('pong');
                 break;
             case 'spellCast':
-                this.gameSession.spellCast(messageObject, this.send);
+                this.gameSession.spellCast(messageObject, this.send.bind(this));
                 break;
             case 'spellsSelected':
-                this.gameSession.spellsSelected(messageObject, this.send);
+                this.gameSession.spellsSelected(messageObject, this.send.bind(this));
                 break;
             case 'parseError':
                 this.send('error', {errorType: 'parseError'});
@@ -166,6 +163,7 @@ Session.getFirstJson = function (str) {
                     try {
                         msgObj = JSON.parse(str.substring(0, i + 1))
                     } catch (e) {
+                        console.warn(e)
                         msgObj = {'type': 'parseError'}
                     }
                     return [msgObj, str.substring(i + 1)];
