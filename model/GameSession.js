@@ -70,7 +70,7 @@ GameSession.create = async function (opts) {
         gameSession.send("prepareSpells", {"spells": allSpells, "spellsAmount": 5, "timeout": 5000});
         while (true) {
             await sleep(5000);
-            gameSession.send("turnStart", {spell: allSpells[Math.round(Math.random() * 6)]});
+            gameSession.send("turnStart", {spell: allSpells[Math.floor(Math.random() * allSpells.length)]});
         }
     }
     return gameSession;
