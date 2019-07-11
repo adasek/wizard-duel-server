@@ -6,7 +6,6 @@
  * 
  */
 const Player = require('./Player');
-
 //loading svg
 const fs = require('fs');
 const util = require('util');
@@ -95,12 +94,12 @@ class GameSession {
             return;
         }
 
-        var amount = 50 * opts.accuracy;
+        var amount = Math.round(50 * opts.accuracy * 10) / 10;
 
-        if(spell.type === "attack"){
-          console.log(player.name+'⚡'+amount);
-        }else if(spell.type === "defense"){
-          console.log(player.name+'💧'+amount);
+        if (spell.type === "attack") {
+            console.log(player.name + '⚡' + amount);
+        } else if (spell.type === "defense") {
+            console.log(player.name + '💧' + amount);
         }
         //find playerInstance of givenPlayer
         for (var i = 0; i < this.players.length; i++) {
@@ -211,8 +210,8 @@ GameSession.create = async function (opts) {
                     gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
                     await sleep(2000);
                     //simulate the other player
-                    if (gameSession.prepareSpellsArray[i]!==null && gameSession.prepareSpellsArray[i]!=='undefined' && gameSession.prepareSpellsArray[i].type === 'defense') {
-                        gameSession.spellCast(oponentPlayer, {"spellId":"kal-vas-flam","accuracy": Math.random()}, function () {});
+                    if (gameSession.prepareSpellsArray[i] !== null && gameSession.prepareSpellsArray[i] !== 'undefined' && gameSession.prepareSpellsArray[i].type === 'defense') {
+                        gameSession.spellCast(oponentPlayer, {"spellId": "kal-vas-flam", "accuracy": Math.random()}, function () {});
                     }
                     gameSession.send();
                     await sleep(3000);
