@@ -75,7 +75,11 @@ class Session {
 
         while (this.msgQueue.length > 0) {
             var oldMsg = this.msgQueue.shift();
-            this._send(oldMsg);
+            if (!this._send(oldMsg)) {
+                //unable to send first msg from queue
+                this.enqueueMessage(msg);
+                return;
+            }
         }
 
         this._send(msg);
@@ -84,7 +88,7 @@ class Session {
     _send(msg) {
         if (!this.active) {
             this.enqueueMessage(msg);
-            return;
+            return false;
         }
         try {
             this.connection.write(JSON.stringify(msg));
@@ -94,7 +98,9 @@ class Session {
             console.warn(e);
             this.unbindConnection();
             this.enqueueMessage(msg);
+            return false;
         }
+        return true;
     }
 
     enqueueMessage(msg) {
