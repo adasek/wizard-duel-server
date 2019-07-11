@@ -44,3 +44,21 @@ reconnect with the old sessionId: connect and send message:
 {"type":"rejoinSession","sessionId":"8be3dfc36d268f8fb51c20b04a9e1000390392e8"}
 ```
 Your context should be as you left it.
+
+
+Seslani spellu / pouze jednou, po zprave serveru 'turnStart'
+{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accouracy:0.91,penalty:0.55}
+
+
+Vyber spellu (vicekrat, po zprave serveru 'prepareSpells'):
+{type:'spellsSelected',spells:['protego','kal_vas_flam',null,null,'protego']}
+
+```
+{"spells": [ "undefined", "undefined", "NONE" ],"type": "spellsSelected"}
+
+{"spells": [ null,"kal-vas-flam","protego","kal-vas-flam",null ],"type": "spellsSelected"}
+
+{ "spells": [ "lumos", "protego", "kal-vas-flam", "kal-vas-flam", "undefined" ], "type": "spellsSelected"}
+
+{"type":"spellCast","spellId":"protego","accuracy":0.5,"penalty":0.5}
+```

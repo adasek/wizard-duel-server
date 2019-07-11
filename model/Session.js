@@ -2,6 +2,7 @@ const crypto = require('crypto');
 
 const SessionList = require('./SessionList');
 const GameSession = require('./GameSession');
+const Player = require('./Player');
 
 
 class Session {
@@ -23,11 +24,20 @@ class Session {
 
         this.gameSession = null;
         //temporary:
-        setTimeout(this.createGameSession.bind(this,'demo'), 3000);
+        setTimeout(this.createGameSession.bind(this, 'demo'), 3000);
     }
 
     async createGameSession(modeName) {
-        this.gameSession = await GameSession.create({'session': this, 'gameMode': {'name': modeName}});
+        this.gameSession = await GameSession.create({'player': this.getPlayer(), 'session': this, 'gameMode': {'name': modeName}});
+    }
+
+    //gets Player associated with this session
+    getPlayer() {
+        if (this.player) {
+            return this.player;
+        }
+        this.player = Player.playerList.random();
+        return this.player;
     }
 
     useMessage(messageObject) {
@@ -39,10 +49,10 @@ class Session {
                 this.send('pong');
                 break;
             case 'spellCast':
-                this.gameSession.spellCast(messageObject, this.send.bind(this));
+                this.gameSession.spellCast(this.getPlayer(), messageObject, this.send.bind(this));
                 break;
             case 'spellsSelected':
-                this.gameSession.spellsSelected(messageObject, this.send.bind(this));
+                this.gameSession.spellsSelected(this.getPlayer(), messageObject, this.send.bind(this));
                 break;
             case 'parseError':
                 this.send('error', {errorType: 'parseError'});
@@ -141,7 +151,7 @@ class Session {
             this.receivedData = parseResult[1];
             // json was parsed, do something with it
             var messageObject = parseResult[0];
-             console.log(messageObject);
+            console.log(messageObject);
             this.useMessage(messageObject);
             // parse next json (msg)
             parseResult = Session.getFirstJson(this.receivedData);

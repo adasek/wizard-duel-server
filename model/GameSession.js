@@ -5,6 +5,7 @@
  * Structure is specified by GameMode
  * 
  */
+const Player = require('./Player');
 
 //loading svg
 const fs = require('fs');
@@ -15,6 +16,8 @@ class GameSession {
     constructor(opts) {
         this.opts = opts;
         //this.opts.gameMode.name
+
+        this.player
 
         this.state = 'init';
         this.setPreparedSpellsAmount(1);
@@ -84,25 +87,38 @@ class GameSession {
         return this.opts.session.send(msgType, data);
     }
 
-    //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accouracy:0.91}
-    spellCast(opts, callback) {
+    //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accuracy:0.91}
+    spellCast(player, opts, callback) {
         //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(opts.spellId);
-        if(spell === null){
+        if (spell === null) {
             return;
         }
 
         var amount = 50 * opts.accuracy;
-        if (spell.type == "atack") {
-            this.oponentLifeChange = -amount;
-            this.oponentLife -= amount;
-        } else if (spell.type == "defense") {
-            this.playerLifeChange = -(50 - amount);
-            this.playerLife -= (50 - amount);
-        } else {
-            //no func yet
 
+        if(spell.type === "attack"){
+          console.log(player.name+'⚡'+amount);
+        }else if(spell.type === "defense"){
+          console.log(player.name+'💧'+amount);
         }
+        //find playerInstance of givenPlayer
+        for (var i = 0; i < this.players.length; i++) {
+            if (this.players[i].id === player.id) {
+                //me
+                if (spell.type === "attack") {
+                    //nothing to do with me
+                } else if (spell.type === "defense") {
+                    this.players[i].defense = amount;
+                }
+            } else {
+                //oponent of me (for 2 game)
+                if (spell.type === "attack") {
+                    this.players[i].beHit(amount);
+                }
+            }
+        }
+
 
     }
 
@@ -120,7 +136,7 @@ class GameSession {
     }
 
     //{type:'spellsSelected',spells:['protego','kal_vas_flam',null,null,'protego']}
-    spellsSelected(opts, callback) {
+    spellsSelected(player, opts, callback) {
         if (this.state !== "prepareSpells") {
             return callback("error", {msg: 'notInPrepareSpellsState'});
         }
@@ -140,6 +156,27 @@ class GameSession {
             this.prepareSpellsArray.push(null);
         }
     }
+
+    setPlayers(playerCreating, n) {
+        this.players = [];
+        for (var i = 0; i < n; i++) {
+            this.players.push(null);
+        }
+        if (!this.addPlayer(playerCreating.createInstance())) {
+            throw "setPlayers failed to add init player";
+        }
+    }
+
+    addPlayer(player) {
+        for (var i = 0; i < this.players.length; i++) {
+            if (this.players[i] === null) {
+                this.players[i] = player;
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 GameSession.create = async function (opts) {
@@ -149,30 +186,37 @@ GameSession.create = async function (opts) {
     //async
     setTimeout(async function () {
         if (gameSession.modeName() === 'demo') {
+            gameSession.setPlayers(gameSession.opts.player, 2);
+
+            var oponentPlayer = new Player({});
+            var oponentPlayerInstance = oponentPlayer.createInstance();
+            gameSession.addPlayer(oponentPlayerInstance);
+
             function sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
 
             while (true) {
+                gameSession.players.map(function (playerInstance) {
+                    !playerInstance || playerInstance.restartTurn();
+                });
                 //init selected spells
                 gameSession.setPreparedSpellsAmount(5);
-                gameSession.playerLife = 200;
-                gameSession.oponentLife = 200;
-                gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000});
+                gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000, players: gameSession.players});
                 await sleep(15000);
                 for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
-                    gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000});
-                    gameSession.playerLifeChange = 0;
-                    gameSession.oponentLifeChange = 0;
-                    await sleep(5000);
-                    gameSession.send("turnEnd", {player: {
-                            life: gameSession.playerLife,
-                            lifeChange: gameSession.playerLifeChange
-                        }, oponents: [
-                            {id: 'dummy',
-                                life: gameSession.oponentLife,
-                                lifeChange: gameSession.oponentLifeChange
-                            }]});
+                    gameSession.players.map(function (playerInstance) {
+                        !playerInstance || playerInstance.restartTurn();
+                    });
+                    gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
+                    await sleep(2000);
+                    //simulate the other player
+                    if (gameSession.prepareSpellsArray[i]!==null && gameSession.prepareSpellsArray[i]!=='undefined' && gameSession.prepareSpellsArray[i].type === 'defense') {
+                        gameSession.spellCast(oponentPlayer, {"spellId":"kal-vas-flam","accuracy": Math.random()}, function () {});
+                    }
+                    gameSession.send();
+                    await sleep(3000);
+                    gameSession.send("turnEnd", {players: gameSession.players});
                     await sleep(5000);
                 }
             }

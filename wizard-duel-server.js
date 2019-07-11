@@ -1,5 +1,6 @@
 var net = require('net');
 const Session = require('./model/Session');
+const Player = require('./model/Player');
 
 var server = net.createServer(Session.create);
 
