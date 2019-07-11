@@ -117,8 +117,6 @@ class GameSession {
                 }
             }
         }
-
-
     }
 
     findSpell(spellId) {
@@ -213,7 +211,6 @@ GameSession.create = async function (opts) {
                     if (gameSession.prepareSpellsArray[i] !== null && gameSession.prepareSpellsArray[i] !== 'undefined' && gameSession.prepareSpellsArray[i].type === 'defense') {
                         gameSession.spellCast(oponentPlayer, {"spellId": "kal-vas-flam", "accuracy": Math.random()}, function () {});
                     }
-                    gameSession.send();
                     await sleep(3000);
                     gameSession.send("turnEnd", {players: gameSession.players});
                     await sleep(5000);
