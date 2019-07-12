@@ -5,6 +5,7 @@
  * Structure is specified by GameMode
  * 
  */
+const crypto = require('crypto');
 const Player = require('./Player');
 //loading svg
 const fs = require('fs');
@@ -23,6 +24,8 @@ class GameSession {
 
         this.spellBook = null;
         setTimeout(this.getAllSpells.bind(this), 0);
+
+        this.id = crypto.randomBytes(20).toString('hex');
     }
 
     slugify(s) {
@@ -33,7 +36,7 @@ class GameSession {
     }
 
     async getAllSpells() {
-        if (this.spellBook != null) {
+        if (this.spellBook !== null) {
             return this.spellBook;
         }
 
@@ -87,12 +90,13 @@ class GameSession {
     }
 
     sendToAllPlayers(msgType, data) {
-        for (const player of players) {
-            this.sendTo(player, msgType, data);
+        //presumes all players are defined
+        for (const playerInstance of this.players) {
+            this.sendTo(playerInstance, msgType, data);
         }
     }
-    sendTo(player, msgType, data) {
-        return player.session.send(msgType, data);
+    sendTo(playerInstance, msgType, data) {
+        return playerInstance.session.send(msgType, data);
     }
 
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accuracy:0.91}
@@ -163,17 +167,17 @@ class GameSession {
         }
     }
 
-    setPlayers(playerCreating, n) {
+    setPlayers(n) {
         this.players = [];
         for (var i = 0; i < n; i++) {
             this.players.push(null);
         }
-        if (!this.addPlayer(playerCreating.createInstance())) {
-            throw "setPlayers failed to add init player";
-        }
     }
 
     addPlayer(player) {
+        if (player.session === null) {
+            throw "addPlayer without session";
+        }
         for (var i = 0; i < this.players.length; i++) {
             if (this.players[i] === null) {
                 this.players[i] = player;
@@ -187,13 +191,20 @@ class GameSession {
         return (this.players.indexOf(null) >= 0);
     }
 
-    join(playerInstance) {
+    join(session) {
+        var playerInstance = session.getPlayer().createInstance();
+        playerInstance.session = session;
+        if (playerInstance.session === null) {
+            throw 'playerInstance does not have the session';
+        }
         this.addPlayer(playerInstance);
     }
 
 }
 
 GameSession.create = async function (player, opts) {
+    //player,session!
+    opts.player=player;
     var gameSession = new GameSession(opts);
     await gameSession.getAllSpells();
 
@@ -204,7 +215,10 @@ GameSession.create = async function (player, opts) {
     setTimeout(async function () {
         if (gameSession.modeName() === 'demo') {
             //dummy doll
-            gameSession.setPlayers(player, 2);
+            gameSession.setPlayers(2);
+            var playerInstance = gameSession.opts.player.createInstance();
+            playerInstance.session = gameSession.opts.session;
+            gameSession.addPlayer(playerInstance);
 
             var oponentPlayer = new Player({});
             var oponentPlayerInstance = oponentPlayer.createInstance();
@@ -234,7 +248,10 @@ GameSession.create = async function (player, opts) {
                 }
             }
         } else if (gameSession.modeName() === 'duel') {
-            gameSession.setPlayers(player, 2);
+            gameSession.setPlayers(2);
+            var playerInstance = gameSession.opts.player.createInstance();
+            playerInstance.session = gameSession.opts.session;
+            gameSession.addPlayer(playerInstance);
 
             //wait for other player to join
             while (gameSession.needsPlayers()) {
@@ -261,10 +278,14 @@ GameSession.create = async function (player, opts) {
             }
         }
     }, 0);
+
+    GameSession.list[gameSession.id] = gameSession;
     return gameSession;
 };
 
 GameSession._slugify_strip_re = /[^\w\s-]/g;
 GameSession._slugify_hyphenate_re = /[-\s]+/g;
+
+GameSession.list = {};
 
 module.exports = GameSession;

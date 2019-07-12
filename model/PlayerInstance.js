@@ -10,7 +10,7 @@ class PlayerInstance {
         this.lifeMax = opts.lifeMax || 200;
         this.life = opts.life || this.lifeMax;
         this.lifeChange = 0;
-        
+
         this.session = null;
     }
 
@@ -28,6 +28,17 @@ class PlayerInstance {
     restartTurn() {
         this.lifeChange = 0;
         this.defense = 0;
+    }
+
+    toJSON() {
+        var obj = {};
+        for (var key in this) {
+            if (key === "session") {
+                continue;
+            }
+            obj[key] = this[key];
+        }
+        return JSON.stringify(obj);
     }
 
 }

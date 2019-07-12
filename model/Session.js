@@ -23,14 +23,23 @@ class Session {
         this.msgQueue = [];
 
         this.gameSession = null;
-        //temporary:
-        setTimeout(this.createGameSession.bind(this, 'demo'), 3000);
+        //automatic creating / joining existing session
+
+        for (var key in GameSession.list) {
+            if (GameSession.list[key].needsPlayers()) {
+                console.log("joining session");
+                //join game session   
+                GameSession.list[key].join(this);
+                return;
+            }
+        }
+        //else: create new session
+        setTimeout(this.createGameSession.bind(this, 'duel'), 0);
     }
 
     async createGameSession(modeName) {
-        console.log("createGameSession");
-        this.gameSession = await GameSession.create(this.getPlayer(), {'gameMode': {'name': modeName},'session':this});
-        this.gameSession.join(this.getPlayer().createInstance());
+        this.gameSession = await GameSession.create(this.getPlayer(), {'gameMode': {'name': modeName}, 'session': this});
+        this.gameSession.join(this);
     }
 
     //gets Player associated with this session
@@ -72,7 +81,7 @@ class Session {
         msg.type = type;
 
         for (var key in data) {
-            msg[key] = data[key];
+            msg[key] = JSON.parse(JSON.stringify(data[key]));
         }
 
         while (this.msgQueue.length > 0) {
