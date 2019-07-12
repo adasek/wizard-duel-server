@@ -10,6 +10,8 @@ class PlayerInstance {
         this.lifeMax = opts.lifeMax || 200;
         this.life = opts.life || this.lifeMax;
         this.lifeChange = 0;
+        
+        this.session = null;
     }
 
     beHit(hitAmount) {

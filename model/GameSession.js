@@ -16,7 +16,7 @@ class GameSession {
         this.opts = opts;
         //this.opts.gameMode.name
 
-        this.player
+        this.players = [];
 
         this.state = 'init';
         this.setPreparedSpellsAmount(1);
@@ -84,6 +84,15 @@ class GameSession {
             this.state = 'turn';
         }
         return this.opts.session.send(msgType, data);
+    }
+
+    sendToAllPlayers(msgType, data) {
+        for (const player of players) {
+            this.sendTo(player, msgType, data);
+        }
+    }
+    sendTo(player, msgType, data) {
+        return player.session.send(msgType, data);
     }
 
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accuracy:0.91}
@@ -174,24 +183,32 @@ class GameSession {
         return false;
     }
 
+    needsPlayers() {
+        return (this.players.indexOf(null) >= 0);
+    }
+
+    join(playerInstance) {
+        this.addPlayer(playerInstance);
+    }
+
 }
 
-GameSession.create = async function (opts) {
+GameSession.create = async function (player, opts) {
     var gameSession = new GameSession(opts);
     await gameSession.getAllSpells();
 
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     //async
     setTimeout(async function () {
         if (gameSession.modeName() === 'demo') {
-            gameSession.setPlayers(gameSession.opts.player, 2);
+            //dummy doll
+            gameSession.setPlayers(player, 2);
 
             var oponentPlayer = new Player({});
             var oponentPlayerInstance = oponentPlayer.createInstance();
             gameSession.addPlayer(oponentPlayerInstance);
-
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
 
             while (true) {
                 gameSession.players.map(function (playerInstance) {
@@ -212,6 +229,32 @@ GameSession.create = async function (opts) {
                         gameSession.spellCast(oponentPlayer, {"spellId": "kal-vas-flam", "accuracy": Math.random()}, function () {});
                     }
                     await sleep(3000);
+                    gameSession.send("turnEnd", {players: gameSession.players});
+                    await sleep(5000);
+                }
+            }
+        } else if (gameSession.modeName() === 'duel') {
+            gameSession.setPlayers(player, 2);
+
+            //wait for other player to join
+            while (gameSession.needsPlayers()) {
+                await sleep(200);
+            }
+
+            while (true) {
+                gameSession.players.map(function (playerInstance) {
+                    !playerInstance || playerInstance.restartTurn();
+                });
+                //init selected spells
+                gameSession.setPreparedSpellsAmount(5);
+                gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000, players: gameSession.players});
+                await sleep(15000);
+                for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
+                    gameSession.players.map(function (playerInstance) {
+                        !playerInstance || playerInstance.restartTurn();
+                    });
+                    gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
+                    await sleep(5000);
                     gameSession.send("turnEnd", {players: gameSession.players});
                     await sleep(5000);
                 }

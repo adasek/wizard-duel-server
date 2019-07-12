@@ -28,7 +28,9 @@ class Session {
     }
 
     async createGameSession(modeName) {
-        this.gameSession = await GameSession.create({'player': this.getPlayer(), 'session': this, 'gameMode': {'name': modeName}});
+        console.log("createGameSession");
+        this.gameSession = await GameSession.create(this.getPlayer(), {'gameMode': {'name': modeName},'session':this});
+        this.gameSession.join(this.getPlayer().createInstance());
     }
 
     //gets Player associated with this session
