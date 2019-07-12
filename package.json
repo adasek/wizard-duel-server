@@ -1,26 +1,30 @@
 {
-    "name": "wizard-duel-server",
-    "description": "",
-    "version": "0.0.1",
-    "main": "./wizard-duel-server.js",
-    "author": {
-        "name": "Adam Benda",
-        "email": "adam@adasek.cz"
-    },
-    "keywords": [],
-    "licenses": "none",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/YOUR_LOGIN/wizard-duel-server.git"
-    },
-    "bugs": {
-        "url": "http://github.com/YOUR_LOGIN/wizard-duel-server/issues"
-    },
-    "dependencies": {
-        "atob": "^2.1.2",
-        "faker": "^4.1.0"
-    }
+  "name" : "wizard-duel-server",
+  "description" : "WizardDuel game server",
+  "version" : "0.0.2",
+  "main" : "./wizard-duel-server.js",
+  "author" : {
+    "name" : "Adam Benda",
+    "email" : "adam@adasek.cz",
+    "url" : "https://github.com/adasek/"
+  },
+  "keywords" : [ ],
+  "licenses" : "none",
+  "scripts" : {
+    "test" : "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "git://github.com/YOUR_LOGIN/wizard-duel-server.git"
+  },
+  "bugs" : {
+    "url" : "https://github.com/adasek/wizard-duel-server/issues"
+  },
+  "dependencies" : {
+    "atob" : "^2.1.2",
+    "faker" : "^4.1.0"
+  },
+  "license" : {
+    "type" : "mit"
+  }
 }
