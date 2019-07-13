@@ -3,7 +3,7 @@
  * It consists of Turns with specified maximal lengths
  * Turns have different types and may be assymetrical to players
  * Structure is specified by GameMode
- * 
+ *
  */
 const crypto = require('crypto');
 const Player = require('./Player');
@@ -15,7 +15,6 @@ const atob = require('atob');
 class GameSession {
     constructor(opts) {
         this.opts = opts;
-        //this.opts.gameMode.name
 
         this.players = [];
 
@@ -80,13 +79,14 @@ class GameSession {
     }
 
     send(msgType, data) {
+        throw "old send function";
         if (msgType === 'prepareSpells') {
             this.state = 'prepareSpells';
         }
         if (msgType === 'turnStart') {
             this.state = 'turn';
         }
-        return this.opts.session.send(msgType, data);
+        return this.session.send(msgType, data);
     }
 
     sendToAllPlayers(msgType, data) {
@@ -191,33 +191,32 @@ class GameSession {
         return (this.players.indexOf(null) >= 0);
     }
 
+    // Bind communication session to this GameSession
     join(session) {
         var playerInstance = session.getPlayer().createInstance();
         playerInstance.session = session;
-        if (playerInstance.session === null) {
-            throw 'playerInstance does not have the session';
-        }
+        session.gameSession = this;
+        console.log("binding gameSession " + this.id + " to session " + session.id);
         this.addPlayer(playerInstance);
     }
 
 }
 
-GameSession.create = async function (player, opts) {
-    //player,session!
-    opts.player=player;
+GameSession.create = async function (session, opts) {
     var gameSession = new GameSession(opts);
     await gameSession.getAllSpells();
 
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+    _session = session;
     //async
     setTimeout(async function () {
         if (gameSession.modeName() === 'demo') {
             //dummy doll
             gameSession.setPlayers(2);
             var playerInstance = gameSession.opts.player.createInstance();
-            playerInstance.session = gameSession.opts.session;
+            playerInstance.session = _session;
             gameSession.addPlayer(playerInstance);
 
             var oponentPlayer = new Player({});
@@ -249,9 +248,8 @@ GameSession.create = async function (player, opts) {
             }
         } else if (gameSession.modeName() === 'duel') {
             gameSession.setPlayers(2);
-            var playerInstance = gameSession.opts.player.createInstance();
-            playerInstance.session = gameSession.opts.session;
-            gameSession.addPlayer(playerInstance);
+
+            gameSession.join(_session);
 
             //wait for other player to join
             while (gameSession.needsPlayers()) {
@@ -265,14 +263,21 @@ GameSession.create = async function (player, opts) {
                 //init selected spells
                 gameSession.setPreparedSpellsAmount(5);
                 gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000, players: gameSession.players});
+                gameSession.state = "prepareSpells";
+
                 await sleep(15000);
                 for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
                     gameSession.players.map(function (playerInstance) {
                         !playerInstance || playerInstance.restartTurn();
                     });
-                    gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
+                    for (const player of gameSession.players) {
+                        gameSession.sendTo(player, "turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
+                        gameSession.state = "turn";
+                    }
                     await sleep(5000);
-                    gameSession.send("turnEnd", {players: gameSession.players});
+                    for (const player of gameSession.players) {
+                        gameSession.sendTo(player, "turnEnd", {players: gameSession.players});
+                    }
                     await sleep(5000);
                 }
             }

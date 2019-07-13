@@ -38,7 +38,7 @@ class Session {
     }
 
     async createGameSession(modeName) {
-        this.gameSession = await GameSession.create(this.getPlayer(), {'gameMode': {'name': modeName}, 'session': this});
+        this.gameSession = await GameSession.create(this,{'gameMode': {'name': modeName}});
         this.gameSession.join(this);
     }
 
