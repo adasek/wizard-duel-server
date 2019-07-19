@@ -38,7 +38,7 @@ class PlayerInstance {
             }
             obj[key] = this[key];
         }
-        return JSON.stringify(obj);
+        return obj;
     }
 
 }
