@@ -127,7 +127,7 @@ class Session {
             return this.send("error", {errorType: 'sessionId not present'});
         }
         var session = SessionList.findSession(messageObject.sessionId);
-        if (session === null) {
+        if (session === null || typeof(session) === "undefined") {
             return this.send("error", {errorType: 'session does not exist'});
         }
         if (session.active) {
