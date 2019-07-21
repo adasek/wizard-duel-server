@@ -150,21 +150,27 @@ class GameSession {
         if (this.state !== "prepareSpells") {
             return callback("error", {msg: 'notInPrepareSpellsState'});
         }
-        if (opts.spells.length !== this.prepareSpellsNum) {
+        if (opts.spells.length !== this.getPreparedSpellsAmount(player)) {
             return callback("error", {msg: 'badNumberOfSpells'});
         }
-        for (var i = 0; i < this.prepareSpellsArray.length; i++) {
+        for (var i = 0; i <  this.getPreparedSpellsAmount(player); i++) {
             //find spell by id
-            this.prepareSpellsArray[i] = this.findSpell(opts.spells[i]);
+            this.preparedSpells[player.id][i] = this.findSpell(opts.spells[i]);
         }
     }
 
     setPreparedSpellsAmount(num) {
-        this.prepareSpellsNum = num;
-        this.prepareSpellsArray = [];
-        for (var i = 0; i < num; i++) {
-            this.prepareSpellsArray.push(null);
+        this.preparedSpells = {};
+        for (const player of this.players) {
+            this.preparedSpells[player.id] = [];
+            for (var i = 0; i < num; i++) {
+                this.preparedSpells[player.id].push(null);
+            }
         }
+    }
+
+    getPreparedSpellsAmount(player){
+        return this.preparedSpells[player.id].length;
     }
 
     setPlayers(n) {
@@ -200,6 +206,10 @@ class GameSession {
         this.addPlayer(playerInstance);
     }
 
+    getPreparedSpell(player, i) {
+        return this.preparedSpells[player.id][i];
+    }
+
 }
 
 GameSession.create = async function (session, opts) {
@@ -213,39 +223,7 @@ GameSession.create = async function (session, opts) {
     //async
     setTimeout(async function () {
         if (gameSession.modeName() === 'demo') {
-            //dummy doll
-            gameSession.setPlayers(2);
-            var playerInstance = gameSession.opts.player.createInstance();
-            playerInstance.session = _session;
-            gameSession.addPlayer(playerInstance);
-
-            var oponentPlayer = new Player({});
-            var oponentPlayerInstance = oponentPlayer.createInstance();
-            gameSession.addPlayer(oponentPlayerInstance);
-
-            while (true) {
-                gameSession.players.map(function (playerInstance) {
-                    !playerInstance || playerInstance.restartTurn();
-                });
-                //init selected spells
-                gameSession.setPreparedSpellsAmount(5);
-                gameSession.send("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000, players: gameSession.players});
-                await sleep(15000);
-                for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
-                    gameSession.players.map(function (playerInstance) {
-                        !playerInstance || playerInstance.restartTurn();
-                    });
-                    gameSession.send("turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
-                    await sleep(2000);
-                    //simulate the other player
-                    if (gameSession.prepareSpellsArray[i] !== null && gameSession.prepareSpellsArray[i] !== 'undefined' && gameSession.prepareSpellsArray[i].type === 'defense') {
-                        gameSession.spellCast(oponentPlayer, {"spellId": "kal-vas-flam", "accuracy": Math.random()}, function () {});
-                    }
-                    await sleep(3000);
-                    gameSession.send("turnEnd", {players: gameSession.players});
-                    await sleep(5000);
-                }
-            }
+            //dummy doll: todo fix
         } else if (gameSession.modeName() === 'duel') {
             gameSession.setPlayers(2);
 
@@ -261,17 +239,18 @@ GameSession.create = async function (session, opts) {
                     !playerInstance || playerInstance.restartTurn();
                 });
                 //init selected spells
-                gameSession.setPreparedSpellsAmount(5);
-                gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": gameSession.prepareSpellsNum, "timeout": 10000, players: gameSession.players});
+                const spellAmount = 5;
+                gameSession.setPreparedSpellsAmount(spellAmount);
+                gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": spellAmount, "timeout": 10000, players: gameSession.players});
                 gameSession.state = "prepareSpells";
 
                 await sleep(15000);
-                for (var i = 0; i < gameSession.prepareSpellsNum; i++) {
+                for (var i = 0; i < spellAmount; i++) {
                     gameSession.players.map(function (playerInstance) {
                         !playerInstance || playerInstance.restartTurn();
                     });
                     for (const player of gameSession.players) {
-                        gameSession.sendTo(player, "turnStart", {spell: gameSession.prepareSpellsArray[i], "timeout": 5000, players: gameSession.players});
+                        gameSession.sendTo(player, "turnStart", {spell: gameSession.getPreparedSpell(player, i), "timeout": 5000, players: gameSession.players});
                         gameSession.state = "turn";
                     }
                     await sleep(5000);
