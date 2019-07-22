@@ -34,7 +34,7 @@ class PlayerInstance {
     
     beHealed(amount){
         console.log('✚' + amount + this.name);
-        this.life = amount;
+        this.life += amount;
         this.lifeChange += amount;
         
     }
