@@ -58,7 +58,11 @@ Vyber spellu (vicekrat, po zprave serveru 'prepareSpells'):
 
 {"spells": [ null,"kal-vas-flam","protego","kal-vas-flam",null ],"type": "spellsSelected"}
 
+{"spells": [ "kal-vas-flam","kal-vas-flam","kal-vas-flam","kal-vas-flam","kal-vas-flam" ],"type": "spellsSelected"}
+
+
 { "spells": [ "lumos", "protego", "kal-vas-flam", "kal-vas-flam", "undefined" ], "type": "spellsSelected"}
 
+{"type":"spellCast","spellId":"kal-vas-flam","accuracy":0.99,"penalty":0}
 {"type":"spellCast","spellId":"protego","accuracy":0.5,"penalty":0.5}
 ```

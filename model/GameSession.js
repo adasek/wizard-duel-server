@@ -204,20 +204,21 @@ class GameSession {
             }
         }
         console.log("Konec hry. Vyhral " + living.map(x => x.name));
-        for (const player of this.players) {
-            if (player.life > 0) {
-                this.sendTo(player, 'sessionEnd', {winner: true});
+        for (var i = 0;i<this.players.length;i++) {
+            if (this.players[i].life > 0) {
+                this.players[i].winner = true;
             } else {
-                this.sendTo(player, 'sessionEnd', {winner: false});
+                this.players[i].winner = false;
             }
-
-
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            sleep(3000);
-            this.disconnectAll();
         }
+
+        this.sendToAllPlayers('sessionEnd', {players: this.players});
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        sleep(3000);
+        this.disconnectAll();
     }
     disconnectAll() {
         for (const player of this.players) {
