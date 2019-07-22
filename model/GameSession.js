@@ -96,6 +96,11 @@ class GameSession {
         }
     }
     sendTo(playerInstance, msgType, data) {
+
+        if (process.argv.indexOf('-d') >= 0) {
+            console.log("Sending msg=" + msgType + " to " + playerInstance.id);
+            console.log(JSON.stringify(data, ["spells", "type", "name", "spell", "type", "errorType", "error", "players", "defense", "life", "lifeChange"], 1));
+        }
         return playerInstance.session.send(msgType, data);
     }
 
@@ -107,7 +112,7 @@ class GameSession {
             return;
         }
 
-        var amount = Math.round(50 * opts.accuracy * 10) / 10;
+        var amount = Math.round(5 * opts.accuracy) / 10;
 
         if (spell.type === "attack") {
             console.log(player.name + '⚡' + amount);
@@ -153,7 +158,7 @@ class GameSession {
         if (opts.spells.length !== this.getPreparedSpellsAmount(player)) {
             return callback("error", {msg: 'badNumberOfSpells'});
         }
-        for (var i = 0; i <  this.getPreparedSpellsAmount(player); i++) {
+        for (var i = 0; i < this.getPreparedSpellsAmount(player); i++) {
             //find spell by id
             this.preparedSpells[player.id][i] = this.findSpell(opts.spells[i]);
         }
@@ -169,7 +174,7 @@ class GameSession {
         }
     }
 
-    getPreparedSpellsAmount(player){
+    getPreparedSpellsAmount(player) {
         return this.preparedSpells[player.id].length;
     }
 

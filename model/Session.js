@@ -38,7 +38,7 @@ class Session {
     }
 
     async createGameSession(modeName) {
-        this.gameSession = await GameSession.create(this,{'gameMode': {'name': modeName}});
+        this.gameSession = await GameSession.create(this, {'gameMode': {'name': modeName}});
         this.gameSession.join(this);
     }
 
@@ -127,7 +127,7 @@ class Session {
             return this.send("error", {errorType: 'sessionId not present'});
         }
         var session = SessionList.findSession(messageObject.sessionId);
-        if (session === null || typeof(session) === "undefined") {
+        if (session === null || typeof (session) === "undefined") {
             return this.send("error", {errorType: 'session does not exist'});
         }
         if (session.active) {
@@ -168,7 +168,10 @@ class Session {
             this.receivedData = parseResult[1];
             // json was parsed, do something with it
             var messageObject = parseResult[0];
-            console.log(messageObject);
+
+            if (process.argv.indexOf('-d') >= 0) {
+                console.log(messageObject);
+            }
             this.useMessage(messageObject);
             // parse next json (msg)
             parseResult = Session.getFirstJson(this.receivedData);
