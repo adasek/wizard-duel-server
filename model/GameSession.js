@@ -94,6 +94,12 @@ class GameSession {
             return;
         }
 
+        //am I stunned?
+        if (player.stunned > 0) {
+            //sorryjako
+            player.stunned--;
+            return;
+        }
 
         for (var i = 0; i < this.players.length; i++) {
             if (this.players[i].id === player.id) {
@@ -251,10 +257,10 @@ GameSession.create = async function (session, opts) {
                 //init selected spells
                 const spellAmount = 3;
                 gameSession.setPreparedSpellsAmount(spellAmount);
-                gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": spellAmount, "timeout": 10000, players: gameSession.players});
+                gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": spellAmount, "timeout": 20000, players: gameSession.players});
                 gameSession.state = "prepareSpells";
 
-                await sleep(15000);
+                await sleep(20300);
                 for (var i = 0; i < spellAmount; i++) {
                     gameSession.players.map(function (playerInstance) {
                         !playerInstance || playerInstance.restartTurn();
@@ -263,15 +269,19 @@ GameSession.create = async function (session, opts) {
                     for (const player of gameSession.players) {
                         var spell = gameSession.getPreparedSpell(player, i);
                         console.log(player.name + " kouzlí " + (spell ? spell.name : "[nic]"));
-                        gameSession.sendTo(player, "turnStart", {spell: spell, "timeout": 5000, players: gameSession.players});
+                        gameSession.sendTo(player, "turnStart", {spell: spell, "timeout": 7000, players: gameSession.players});
                         gameSession.state = "turn";
                     }
-                    await sleep(5000);
+                    await sleep(7000);
                     for (const player of gameSession.players) {
                         gameSession.sendTo(player, "turnEnd", {players: gameSession.players});
                     }
                     console.log("...konec kola");
-                    await sleep(5000);
+                    for (const player of gameSession.players) {
+                        process.stdout.write(player.name + ":" + player.life + " ");
+                    }
+                    console.log();
+                    await sleep(1000);
 
                     for (const player of gameSession.players) {
                         if (player.life <= 0) {

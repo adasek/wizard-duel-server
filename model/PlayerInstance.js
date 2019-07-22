@@ -41,7 +41,7 @@ class PlayerInstance {
     
     beStunned(turns){
         if(this.defense>0){
-            console.log("᥀🛡"+this.name)
+            console.log("᥀🛡"+this.name);
             return;
         }
         console.log('᥀' + turns + this.name);
