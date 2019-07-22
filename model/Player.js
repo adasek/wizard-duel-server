@@ -26,7 +26,9 @@ class Player {
 
 Player.playerList = [
     new Player({'name': 'Adam'}),
-    new Player({'name': 'Mravenec'})
+    new Player({'name': 'Aibo'}),
+    new Player({'name': 'Mravenec'}),
+    new Player({'name': 'Arxarian'})
 ];
 
 Player.playerList.findByName = function (name) {
