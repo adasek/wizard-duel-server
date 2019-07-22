@@ -86,8 +86,8 @@ class GameSession {
 
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accuracy:0.91}
     spellCast(player, opts, callback) {
-        console.log(player.name + " sesílá " + opts.spellId + " přesnost "+opts.accuracy + (opts.penalty>0 ? ", penalty "+opts.penalty : ""));
-        
+        console.log(player.name + " sesílá " + opts.spellId + " přesnost " + opts.accuracy + (opts.penalty > 0 ? ", penalty " + opts.penalty : ""));
+
         //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(opts.spellId);
         if (spell === null) {
@@ -187,7 +187,28 @@ class GameSession {
         return this.preparedSpells[player.id][i];
     }
 
+    sessionEnd() {
+        var living = [];
+        var dead = [];
+        for (const player of this.players) {
+            if (player.life > 0) {
+                living.push(player);
+            } else {
+                dead.push(player);
+            }
+        }
+        console.log("Konec hry. Vyhral " + living.map(x => x.name));
+        for (const player of this.players) {
+            if (player.life > 0) {
+                this.sendToPlayer(player, 'sessionEnd', {winner: true});
+            } else {
+                this.sendToPlayer(player, 'sessionEnd', {winner: false});
+            }
+        }
+    }
+
 }
+
 
 GameSession.create = async function (session, opts) {
     var gameSession = new GameSession(opts);
@@ -222,7 +243,8 @@ GameSession.create = async function (session, opts) {
                 gameSession.state = "prepareSpells";
 
                 await sleep(15000);
-                for (var i = 0; i < spellAmount; i++) {
+                turns:
+                        for (var i = 0; i < spellAmount; i++) {
                     gameSession.players.map(function (playerInstance) {
                         !playerInstance || playerInstance.restartTurn();
                     });
@@ -239,7 +261,15 @@ GameSession.create = async function (session, opts) {
                     }
                     console.log("...konec kola");
                     await sleep(5000);
+
+                    for (const player of gameSession.players) {
+                        if (player.life <= 0) {
+                            gameSession.sessionEnd();
+                            break turns;
+                        }
+                    }
                 }
+
             }
         }
     }, 0);

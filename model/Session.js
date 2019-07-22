@@ -48,7 +48,7 @@ class Session {
             return this.player;
         }
         this.player = Player.playerList.findByName("");
-        if(this.player == null){
+        if(this.player === null){
             this.player = Player.playerList.random();
         }
         return this.player;
