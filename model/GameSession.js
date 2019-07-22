@@ -86,6 +86,7 @@ class GameSession {
 
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accuracy:0.91}
     spellCast(player, opts, callback) {
+        console.log(player.name + " sesílá " + opts.spellId);
         //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(opts.spellId);
         if (spell === null) {
@@ -121,6 +122,7 @@ class GameSession {
 
     //{type:'spellsSelected',spells:['protego','kal_vas_flam',null,null,'protego']}
     spellsSelected(player, opts, callback) {
+        console.log(player.name + " vybírá :" + opts.spells);
         if (this.state !== "prepareSpells") {
             return callback("error", {msg: 'notInPrepareSpellsState'});
         }
@@ -223,14 +225,18 @@ GameSession.create = async function (session, opts) {
                     gameSession.players.map(function (playerInstance) {
                         !playerInstance || playerInstance.restartTurn();
                     });
+                    console.log("nové kolo...");
                     for (const player of gameSession.players) {
-                        gameSession.sendTo(player, "turnStart", {spell: gameSession.getPreparedSpell(player, i), "timeout": 5000, players: gameSession.players});
+                        var spell = gameSession.getPreparedSpell(player, i);
+                        console.log(player.name + " kouzlí " + (spell ? spell.name : "[nic]"));
+                        gameSession.sendTo(player, "turnStart", {spell: spell, "timeout": 5000, players: gameSession.players});
                         gameSession.state = "turn";
                     }
                     await sleep(5000);
                     for (const player of gameSession.players) {
                         gameSession.sendTo(player, "turnEnd", {players: gameSession.players});
                     }
+                    console.log("...konec kola");
                     await sleep(5000);
                 }
             }

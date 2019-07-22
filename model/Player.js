@@ -25,11 +25,17 @@ class Player {
 }
 
 Player.playerList = [
-    new Player({'name': 'Adam'}),
-    new Player({'name': 'Aibo'}),
-    new Player({'name': 'Mravenec'}),
-    new Player({'name': 'Arxarian'})
+    new Player({'name': 'Bolek'}),
+    new Player({'name': 'Lolek'})
 ];
+/*
+ * 
+ new Player({'name': 'Adam'}),
+ new Player({'name': 'Aibo'}),
+ new Player({'name': 'Mravenec'}),
+ new Player({'name': 'Arxarian'}),
+ new Player({'name': 'Pavel'})
+ */
 
 Player.playerList.findByName = function (name) {
     for (const player of Player.playerList) {

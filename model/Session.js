@@ -43,11 +43,14 @@ class Session {
     }
 
     //gets Player associated with this session
-    getPlayer() {
+    getPlayer(name) {
         if (this.player) {
             return this.player;
         }
-        this.player = Player.playerList.random();
+        this.player = Player.playerList.findByName("");
+        if(this.player == null){
+            this.player = Player.playerList.random();
+        }
         return this.player;
     }
 
