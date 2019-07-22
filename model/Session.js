@@ -25,16 +25,6 @@ class Session {
         this.gameSession = null;
         //automatic creating / joining existing session
 
-        for (var key in GameSession.list) {
-            if (GameSession.list[key].needsPlayers()) {
-                console.log("joining session");
-                //join game session   
-                GameSession.list[key].join(this);
-                return;
-            }
-        }
-        //else: create new session
-        setTimeout(this.createGameSession.bind(this, 'duel'), 0);
     }
 
     async createGameSession(modeName) {
@@ -47,7 +37,7 @@ class Session {
         if (this.player) {
             return this.player;
         }
-        this.player = Player.playerList.findByName("");
+        this.player = Player.playerList.findByName(name);
         if (this.player === null) {
             this.player = Player.playerList.random();
         }
@@ -71,9 +61,29 @@ class Session {
             case 'parseError':
                 this.send('error', {errorType: 'parseError'});
                 break;
+            case 'joinSession':
+                this.joinSession(messageObject);
+                break;
             default:
                 this.send('error', {errorType: 'unknownMessage'});
         }
+    }
+    
+    joinSession(messageObject){
+        //find my player!
+        var playerName = messageObject.name || "";
+        this.getPlayer(playerName);
+        
+        for (var key in GameSession.list) {
+            if (GameSession.list[key].needsPlayers()) {
+                console.log("joining session");
+                //join game session   
+                GameSession.list[key].join(this);
+                return;
+            }
+        }
+        //else: create new session
+        setTimeout(this.createGameSession.bind(this, 'duel'), 0);
     }
 
     send(type, data) {
