@@ -17,39 +17,42 @@ class Spell {
         this.amount = opts.amount || 0;
         this.type = opts.type || "default";
         this.id = Spell.slugify(this.name);
-        
-       const readFile = util.promisify(fs.readFile);
+
+        const readFile = util.promisify(fs.readFile);
 
         // load files
-        setTimeout(async function(){
+        setTimeout(async function () {
             var svgContent = await readFile('spells/' + this['id'] + ".svg");
             this.svg = atob(svgContent);
-        }.bind(this),0);
+        }.bind(this), 0);
     }
-    
-    applyToPlayerInstance(playerInstance,opts){
+
+    applyToPlayerInstance(playerInstance, opts) {
         const isOponent = opts.oponent;
-        var default_amount = Math.round(5 * opts.accuracy) / 10;
-        
-        if(this.id === "kal-vas-flam"){
-            if(isOponent){
-             playerInstance.beHit(default_amount);
+        var penalty = opts.penalty / 100 || 0;
+        var accuracy = opts.accuracy / 100 || 0;
+        var default_amount = Math.round(500 * accuracy) / 10;
+        default_amount = default_amount * Math.pow(1 - penalty, 2);
+
+        if (this.id === "kal-vas-flam") {
+            if (isOponent) {
+                playerInstance.beHit(default_amount);
             }
-        }else if(this.id === "protego"){
-            if(!isOponent){
-             playerInstance.beProtected(default_amount);
+        } else if (this.id === "protego") {
+            if (!isOponent) {
+                playerInstance.beProtected(default_amount);
             }
-        }else if(this.id === "episkey"){
-            if(!isOponent){
-             playerInstance.beHealed(default_amount);
+        } else if (this.id === "episkey") {
+            if (!isOponent) {
+                playerInstance.beHealed(default_amount);
             }
-        }else if(this.id === "expeliarmus"){
-            if(isOponent){
-                if(opts.accuracy  > 0.5){
-                 playerInstance.beStunned(1);
+        } else if (this.id === "expeliarmus") {
+            if (isOponent) {
+                if (opts.accuracy > 0.5) {
+                    playerInstance.beStunned(1);
                 }
             }
-        }else {
+        } else {
             console.error("Unkwnown spell effect");
         }
     }
@@ -59,12 +62,12 @@ Spell._slugify_strip_re = /[^\w\s-]/g;
 Spell._slugify_hyphenate_re = /[-\s]+/g;
 
 
-Spell.slugify = function(s) {
+Spell.slugify = function (s) {
     s = s.replace(Spell._slugify_strip_re, '').trim().toLowerCase();
     s = s.replace(Spell._slugify_hyphenate_re, '-');
     s = s.toLowerCase();
     return s;
 };
-    
+
 
 module.exports = Spell;

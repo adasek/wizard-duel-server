@@ -86,7 +86,8 @@ class GameSession {
 
     //{type:'spellCast',spellId:'protego', time_elapsed_complete:1700, time_elapsed_spell:700, accuracy:0.91}
     spellCast(player, opts, callback) {
-        console.log(player.name + " sesílá " + opts.spellId);
+        console.log(player.name + " sesílá " + opts.spellId + " přesnost "+opts.accuracy + (opts.penalty>0 ? ", penalty "+opts.penalty : ""));
+        
         //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(opts.spellId);
         if (spell === null) {
@@ -97,10 +98,10 @@ class GameSession {
         for (var i = 0; i < this.players.length; i++) {
             if (this.players[i].id === player.id) {
                 //me
-                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, oponent: false});
+                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, penalty: opts.penalty, oponent: false});
             } else {
                 //opponent
-                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, oponent: true});
+                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, penalty: opts.penalty, oponent: true});
             }
         }
 
