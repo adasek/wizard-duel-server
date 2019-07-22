@@ -47,7 +47,7 @@ class GameSession {
                 amount: 2,
                 type: 'attack'
             }), new Spell({
-                name: 'Expeliarmus',
+                name: 'Expelliarmus',
                 amount: 1,
                 type: 'util'
             }), new Spell({
