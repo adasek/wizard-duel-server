@@ -48,7 +48,7 @@ class Session {
             return this.player;
         }
         this.player = Player.playerList.findByName("");
-        if(this.player === null){
+        if (this.player === null) {
             this.player = Player.playerList.random();
         }
         return this.player;
@@ -115,6 +115,11 @@ class Session {
             return false;
         }
         return true;
+    }
+
+    disconnect() {
+        this.connection.end();
+        this.active = false;
     }
 
     enqueueMessage(msg) {

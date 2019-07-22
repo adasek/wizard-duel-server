@@ -187,7 +187,7 @@ class GameSession {
         return this.preparedSpells[player.id][i];
     }
 
-    sessionEnd() {
+    async sessionEnd() {
         var living = [];
         var dead = [];
         for (const player of this.players) {
@@ -200,13 +200,24 @@ class GameSession {
         console.log("Konec hry. Vyhral " + living.map(x => x.name));
         for (const player of this.players) {
             if (player.life > 0) {
-                this.sendToPlayer(player, 'sessionEnd', {winner: true});
+                this.sendTo(player, 'sessionEnd', {winner: true});
             } else {
-                this.sendToPlayer(player, 'sessionEnd', {winner: false});
+                this.sendTo(player, 'sessionEnd', {winner: false});
             }
+
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            sleep(3000);
+            this.disconnectAll();
         }
     }
-
+    disconnectAll() {
+        for (const player of this.players) {
+            player.session.disconnect();
+        }
+    }
 }
 
 
@@ -232,7 +243,8 @@ GameSession.create = async function (session, opts) {
                 await sleep(200);
             }
 
-            while (true) {
+            session:
+                    while (true) {
                 gameSession.players.map(function (playerInstance) {
                     !playerInstance || playerInstance.restartTurn();
                 });
@@ -243,8 +255,7 @@ GameSession.create = async function (session, opts) {
                 gameSession.state = "prepareSpells";
 
                 await sleep(15000);
-                turns:
-                        for (var i = 0; i < spellAmount; i++) {
+                for (var i = 0; i < spellAmount; i++) {
                     gameSession.players.map(function (playerInstance) {
                         !playerInstance || playerInstance.restartTurn();
                     });
@@ -265,7 +276,7 @@ GameSession.create = async function (session, opts) {
                     for (const player of gameSession.players) {
                         if (player.life <= 0) {
                             gameSession.sessionEnd();
-                            break turns;
+                            break session;
                         }
                     }
                 }
