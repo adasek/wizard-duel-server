@@ -44,7 +44,7 @@ class GameSession {
                 type: 'util'
             }), new Spell({
                 name: 'Kal Vas Flam',
-                amount: 2,
+                amount: 1,
                 type: 'attack'
             }), new Spell({
                 name: 'Expelliarmus',
@@ -107,13 +107,6 @@ class GameSession {
         //todo: check if spellId agrees with spellsSelectedArray
         var spell = this.findSpell(opts.spellId);
         if (spell === null) {
-            return;
-        }
-
-        //am I stunned?
-        if (player.stunned > 0) {
-            //sorryjako
-            player.stunned--;
             return;
         }
 
@@ -288,6 +281,13 @@ GameSession.create = async function (session, opts) {
                     console.log("nové kolo...");
                     for (const player of gameSession.players) {
                         var spell = gameSession.getPreparedSpell(player, i);
+                        
+                        //am I stunned?
+                        if (player.stunned > 0) {
+                            console.log("Hráč " + player.name + " nemůže kouzlit.");
+                            player.stunned--;
+                            spell = null;
+                        }
                         console.log(player.name + " kouzlí " + (spell ? spell.name : "[nic]"));
                         gameSession.sendTo(player, "turnStart", {spell: spell, "timeout": 7000, players: gameSession.players});
                         gameSession.state = "turn";

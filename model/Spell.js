@@ -70,18 +70,24 @@ class Spell {
             if (!isOponent) {
                 playerInstance.beHealed(default_amount * 0.5);
             }
-        } else if (this.id === "expeliarmus") {
+        } else if (this.id === "expelliarmus") {
             if (isOponent) {
-                if (opts.accuracy > 0.5) {
+                if (accuracy > 0.9) {
                     playerInstance.beStunned(1);
+                } else {
+                    console.log("Nedostatečná přesnost pro expelliarmus");
                 }
             }
         } else if (this.id === "petrificus-totalus") {
             if (isOponent) {
-                playerInstance.beStunned(99);
+                if (accuracy > 0.9) {
+                    playerInstance.beStunned(99);
+                } else {
+                    console.log("Nedostatečná přesnost pro expelliarmus");
+                }
             }
         } else {
-            console.error("Unkwnown spell effect");
+            console.error("Unknown spell effect");
         }
     }
 }

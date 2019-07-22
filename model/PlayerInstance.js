@@ -39,7 +39,9 @@ class PlayerInstance {
         this.lifeChange -= -hitAmount;
 
         //remove stuns
-        this.stunned = 0;
+        if (hitAmount > 0) {
+            this.stunned = 0;
+        }
     }
 
     beProtected(amount) {
@@ -60,7 +62,7 @@ class PlayerInstance {
             return;
         }
         console.log('᥀' + turns + this.name);
-        this.stunned++;
+        this.stunned += turns;
     }
 
     restartTurn() {
