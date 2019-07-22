@@ -36,6 +36,10 @@ class GameSession {
                 type: 'defense'
             }), new Spell({
                 name: 'Episkey',
+                amount: 1,
+                type: 'util'
+            }), new Spell({
+                name: 'Reparo',
                 amount: 2,
                 type: 'util'
             }), new Spell({
@@ -44,6 +48,18 @@ class GameSession {
                 type: 'attack'
             }), new Spell({
                 name: 'Expeliarmus',
+                amount: 1,
+                type: 'util'
+            }), new Spell({
+                name: 'Accio',
+                amount: 2,
+                type: 'util'
+            }), new Spell({
+                name: 'Reducto',
+                amount: 1,
+                type: 'attack'
+            }), new Spell({
+                name: 'Petrificus Totalus',
                 amount: 1,
                 type: 'util'
             })];
@@ -101,13 +117,14 @@ class GameSession {
             return;
         }
 
+        var instanceRandom = Math.random();
         for (var i = 0; i < this.players.length; i++) {
             if (this.players[i].id === player.id) {
                 //me
-                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, penalty: opts.penalty, oponent: false});
+                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, penalty: opts.penalty, instanceRandom: instanceRandom, oponent: false});
             } else {
                 //opponent
-                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, penalty: opts.penalty, oponent: true});
+                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, penalty: opts.penalty, instanceRandom: instanceRandom, oponent: true});
             }
         }
 
@@ -204,7 +221,7 @@ class GameSession {
             }
         }
         console.log("Konec hry. Vyhral " + living.map(x => x.name));
-        for (var i = 0;i<this.players.length;i++) {
+        for (var i = 0; i < this.players.length; i++) {
             if (this.players[i].life > 0) {
                 this.players[i].winner = true;
             } else {
@@ -258,7 +275,9 @@ GameSession.create = async function (session, opts) {
                 //init selected spells
                 const spellAmount = 3;
                 gameSession.setPreparedSpellsAmount(spellAmount);
-                gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": spellAmount, "timeout": 20000, players: gameSession.players});
+                for (const player of gameSession.players) {
+                    gameSession.sendTo(player, "prepareSpells", {"spells": player.filterSpellBook(gameSession.spellBook), "spellsAmount": spellAmount, "timeout": 20000, players: gameSession.players});
+                }
                 gameSession.state = "prepareSpells";
 
                 await sleep(20300);

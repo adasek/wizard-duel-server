@@ -38,19 +38,47 @@ class Spell {
             if (isOponent) {
                 playerInstance.beHit(default_amount);
             }
+        } else if (this.id === "reducto") {
+            if (isOponent) {
+                playerInstance.beHit(default_amount * 0.5);
+            }
         } else if (this.id === "protego") {
             if (!isOponent) {
                 playerInstance.beProtected(default_amount);
             }
+        } else if (this.id === "accio") {
+            //random effect based on opts.instanceRandom
+            if (opts.instanceRandom < 0.33) {
+                //lesser heal
+                if (!isOponent) {
+                    playerInstance.beHealed(default_amount * 0.3);
+                }
+            } else if (opts.instanceRandom < 0.66) {
+                //lesser hit
+                if (isOponent) {
+                    playerInstance.beHit(default_amount * 0.5);
+                }
+            } else {
+                //stun
+                playerInstance.beStunned(1);
+            }
+        } else if (this.id === "reparo") {
+            if (!isOponent) {
+                playerInstance.beHealed(default_amount * 0.3);
+            }
         } else if (this.id === "episkey") {
             if (!isOponent) {
-                playerInstance.beHealed(default_amount);
+                playerInstance.beHealed(default_amount * 0.5);
             }
         } else if (this.id === "expeliarmus") {
             if (isOponent) {
                 if (opts.accuracy > 0.5) {
                     playerInstance.beStunned(1);
                 }
+            }
+        } else if (this.id === "petrificus-totalus") {
+            if (isOponent) {
+                playerInstance.beStunned(99);
             }
         } else {
             console.error("Unkwnown spell effect");

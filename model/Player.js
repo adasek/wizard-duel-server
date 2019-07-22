@@ -16,6 +16,7 @@ class Player {
             this.name = (faker.fake("{{hacker.adjective}} {{name.firstName}}"));
         }
         this.id = opts.id || crypto.randomBytes(20).toString('hex');
+        this.allowedSpells = opts.allowedSpells || [];
     }
 
     createInstance() {
@@ -25,8 +26,9 @@ class Player {
 }
 
 Player.playerList = [
-    new Player({'name': 'Bolek'}),
-    new Player({'name': 'Lolek'})
+    new Player({'name': 'adambenda', allowedSpells: ["cantis", "expelliarmus", "alohomora", "accio", "finite-inclantatem", "episkey", "reparo", "protego", "petrificus-totalus", "lumos", "kal-vas-flam", "obscuro", "reducto"]}),
+    new Player({'name': 'ondrabenda', allowedSpells: ["cantis", "expelliarmus", "alohomora", "accio", "finite-inclantatem", "episkey", "reparo", "protego", "petrificus-totalus", "lumos", "kal-vas-flam", "obscuro", "reducto"]}),
+  
 ];
 /*
  * 
@@ -39,7 +41,7 @@ Player.playerList = [
 
 Player.playerList.findByName = function (name) {
     for (const player of Player.playerList) {
-        if (name === player.name) {
+        if (name.toLowerCase() === player.name.toLowerCase()) {
             return player;
         }
     }
