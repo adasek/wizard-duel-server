@@ -18,13 +18,10 @@ class PlayerInstance {
     }
 
     filterSpellBook(spellBook) {
-        return spellBook; //todo
         var filteredSpellBook = [];
         for (var i = 0; i < spellBook.length; i++) {
-            console.log(spellBook[i]+"?");
             if (this.allowedSpells.indexOf(spellBook[i].id) >= 0) {
-            console.log("filteredPush");
-                filteredSpellBook.push();
+                filteredSpellBook.push(spellBook[i]);
             }
         }
         return filteredSpellBook;
