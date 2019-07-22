@@ -10,11 +10,13 @@ class PlayerInstance {
         this.lifeMax = opts.lifeMax || 200;
         this.life = opts.life || this.lifeMax;
         this.lifeChange = 0;
+        this.stunned=0;
 
         this.session = null;
     }
 
     beHit(hitAmount) {
+        console.log('⚡' + hitAmount + this.name);
         if (this.defense > 0) {
             hitAmount -= this.defense;
             if (hitAmount < 0) {
@@ -22,7 +24,28 @@ class PlayerInstance {
             }
         }
         this.life -= hitAmount;
-        this.lifeChange = -hitAmount;
+        this.lifeChange -= -hitAmount;
+    }
+    
+    beProtected(amount){
+        console.log('💧' + amount + this.name);
+        this.defense += amount;
+    }
+    
+    beHealed(amount){
+        console.log('✚' + amount + this.name);
+        this.life = amount;
+        this.lifeChange += amount;
+        
+    }
+    
+    beStunned(turns){
+        if(this.defense>0){
+            console.log("᥀🛡"+this.name)
+            return;
+        }
+        console.log('᥀' + turns + this.name);
+        this.stunned++;
     }
 
     restartTurn() {

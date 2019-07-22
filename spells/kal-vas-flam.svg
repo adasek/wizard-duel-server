@@ -5,60 +5,13 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   id="svg8"
-   version="1.1"
-   viewBox="0 0 150 150"
-   height="150mm"
    width="150mm"
-   sodipodi:docname="kal_vas_flam.svg"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="969"
-     id="namedview7"
-     showgrid="false"
-     inkscape:zoom="1.1774114"
-     inkscape:cx="136.18068"
-     inkscape:cy="288.17169"
-     inkscape:window-x="0"
-     inkscape:window-y="33"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg8" />
+   height="150mm"
+   viewBox="0 0 150 150"
+   version="1.1"
+   id="svg8">
   <defs
-     id="defs2">
-    <marker
-       inkscape:stockid="Arrow1Lend"
-       orient="auto"
-       refY="0.0"
-       refX="0.0"
-       id="Arrow1Lend"
-       style="overflow:visible;"
-       inkscape:isstock="true">
-      <path
-         id="path829"
-         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
-         transform="scale(0.8) rotate(180) translate(12.5,0)" />
-    </marker>
-    <inkscape:path-effect
-       effect="spiro"
-       id="path-effect822"
-       is_visible="true" />
-    <inkscape:path-effect
-       effect="spiro"
-       id="path-effect816"
-       is_visible="true" />
-  </defs>
+     id="defs2" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -72,12 +25,10 @@
     </rdf:RDF>
   </metadata>
   <g
-     transform="translate(-23.491222,-60.953721)"
-     id="layer1" />
+     id="layer1"
+     transform="translate(-23.491222,-60.953721)" />
   <path
-     style="fill:none;stroke:#000000;stroke-width:0.25902709;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="M 122.49103,21.952092 27.532413,126.97918 122.75713,127.7086 28.259972,21.269375"
      id="path826"
-     inkscape:connector-curvature="0"
-     sodipodi:nodetypes="cccc" />
+     d="M 122.49103,21.952092 27.532413,126.97918 122.75713,127.7086 28.259972,21.269375"
+     style="fill:none;stroke:#000000;stroke-width:0.25902709;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
 </svg>

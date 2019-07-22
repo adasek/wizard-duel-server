@@ -7,9 +7,7 @@
  */
 const crypto = require('crypto');
 const Player = require('./Player');
-//loading svg
-const fs = require('fs');
-const util = require('util');
+const Spell = require('./Spell');
 const atob = require('atob');
 
 class GameSession {
@@ -27,48 +25,30 @@ class GameSession {
         this.id = crypto.randomBytes(20).toString('hex');
     }
 
-    slugify(s) {
-        s = s.replace(GameSession._slugify_strip_re, '').trim().toLowerCase();
-        s = s.replace(GameSession._slugify_hyphenate_re, '-');
-        s = s.toLowerCase();
-        return s;
-    }
-
     async getAllSpells() {
         if (this.spellBook !== null) {
             return this.spellBook;
         }
 
-        var spellsArray = [{
+        var spellsArray = [new Spell({
                 name: 'Protego',
                 amount: 2,
                 type: 'defense'
-            }, {
-                name: 'Lumos',
+            }), new Spell({
+                name: 'Episkey',
                 amount: 2,
                 type: 'util'
-            }, {
+            }), new Spell({
                 name: 'Kal Vas Flam',
                 amount: 2,
                 type: 'attack'
-            }];
+            }), new Spell({
+                name: 'Expeliarmus',
+                amount: 1,
+                type: 'util'
+            })];
         // todo: load spells from spellbook.json
         // todo: amount based on the GameMode
-
-        //var names = ['Protego', 'Lumos', 'Wingardium Leviosa', 'Kal Vas Flam', 'Imperius', 'Reparo'];
-        //var types = ['defense', 'support', 'support', 'attack', 'attack', 'support'];
-        const readFile = util.promisify(fs.readFile);
-
-        //generate ids from names
-        for (var spell of spellsArray) {
-            spell['id'] = this.slugify(spell['name']);
-        }
-
-        // load files
-        for (var spell of spellsArray) {
-            var svgContent = await readFile('spells/' + spell['id'] + ".svg");
-            spell.svg = atob(svgContent);
-        }
 
         this.spellBook = spellsArray;
         return spellsArray;
@@ -112,29 +92,18 @@ class GameSession {
             return;
         }
 
-        var amount = Math.round(5 * opts.accuracy) / 10;
 
-        if (spell.type === "attack") {
-            console.log(player.name + '⚡' + amount);
-        } else if (spell.type === "defense") {
-            console.log(player.name + '💧' + amount);
-        }
-        //find playerInstance of givenPlayer
         for (var i = 0; i < this.players.length; i++) {
             if (this.players[i].id === player.id) {
                 //me
-                if (spell.type === "attack") {
-                    //nothing to do with me
-                } else if (spell.type === "defense") {
-                    this.players[i].defense = amount;
-                }
+                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, oponent: false});
             } else {
-                //oponent of me (for 2 game)
-                if (spell.type === "attack") {
-                    this.players[i].beHit(amount);
-                }
+                //opponent
+                spell.applyToPlayerInstance(this.players[i], {accuracy: opts.accuracy, oponent: true});
             }
         }
+
+
     }
 
     findSpell(spellId) {
@@ -244,7 +213,7 @@ GameSession.create = async function (session, opts) {
                     !playerInstance || playerInstance.restartTurn();
                 });
                 //init selected spells
-                const spellAmount = 5;
+                const spellAmount = 3;
                 gameSession.setPreparedSpellsAmount(spellAmount);
                 gameSession.sendToAllPlayers("prepareSpells", {"spells": gameSession.spellBook, "spellsAmount": spellAmount, "timeout": 10000, players: gameSession.players});
                 gameSession.state = "prepareSpells";
@@ -271,9 +240,6 @@ GameSession.create = async function (session, opts) {
     GameSession.list[gameSession.id] = gameSession;
     return gameSession;
 };
-
-GameSession._slugify_strip_re = /[^\w\s-]/g;
-GameSession._slugify_hyphenate_re = /[-\s]+/g;
 
 GameSession.list = {};
 
