@@ -12,6 +12,7 @@ class PlayerInstance {
         this.life = opts.life || this.lifeMax;
         this.lifeChange = 0;
         this.stunned = 0;
+        this.stunReason = "";
         this.blinded = 0;
         this.blindedColor = null;
 
@@ -43,7 +44,7 @@ class PlayerInstance {
 
         //remove stuns
         if (hitAmount > 0) {
-            this.stunned = 0;
+            this.removeStun();
         }
     }
 
@@ -71,13 +72,26 @@ class PlayerInstance {
         this.blindedColor = color;
     }
 
-    beStunned(turns) {
+    beStunned(turns, reason) {
         if (this.defense > 0) {
             console.log("᥀🛡" + this.name);
             return;
         }
         console.log('᥀' + turns + this.name);
         this.stunned += turns;
+        this.stunReason += " " + reason;
+    }
+
+    stunnedTurn() {
+        this.stunned--;
+        if (this.stunned === 0) {
+            this.removeStun();
+        }
+    }
+
+    removeStun() {
+        this.stunReason = "";
+        this.stunned = 0;
     }
 
     prevent(spellName, turns) {

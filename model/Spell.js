@@ -70,8 +70,10 @@ class Spell {
                     playerInstance.beHit(default_amount * 0.5);
                 }
             } else {
-                //stun
-                playerInstance.beStunned(1);
+                //stun   
+                if (isOponent) {
+                    playerInstance.beStunned(1, "accio");
+                }
             }
         } else if (this.id === "reparo") {
             if (!isOponent) {
@@ -84,7 +86,7 @@ class Spell {
         } else if (this.id === "expelliarmus") {
             if (isOponent) {
                 if (accuracy > 0.9 && penalty <= 0.01) {
-                    playerInstance.beStunned(1);
+                    playerInstance.beStunned(1, "expelliarmus");
                 } else {
                     console.log("Nedostatečná přesnost pro expelliarmus");
                 }
@@ -102,10 +104,10 @@ class Spell {
             if (isOponent) {
                 if (accuracy > 0.9 && penalty <= 0.01) {
                     if (opts.instanceRandom < 0.5) {
-                        playerInstance.beStunned(1);
+                        playerInstance.beStunned(1, "cantis");
                         console.log("Cantis stunuje na 1 kolo");
                     } else {
-                        playerInstance.beStunned(2);
+                        playerInstance.beStunned(2, "cantis");
                         console.log("Cantis stunuje na 2 kola");
                     }
                 } else {
@@ -115,7 +117,7 @@ class Spell {
         } else if (this.id === "petrificus-totalus") {
             if (isOponent) {
                 if (accuracy > 0.9 && penalty <= 0.01) {
-                    playerInstance.beStunned(99);
+                    playerInstance.beStunned(99, "petrificus");
                 } else {
                     console.log("Nedostatečná přesnost pro expelliarmus");
                 }
