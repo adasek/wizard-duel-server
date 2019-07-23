@@ -34,6 +34,17 @@ class Spell {
         var default_amount = Math.round(500 * accuracy) / 10;
         default_amount = default_amount * Math.pow(1 - penalty, 2);
 
+        //prevents
+        for (var key in playerInstance.prevents) {
+            if (playerInstance.prevents[key] > 0) {
+                if (this.id === key) {
+                    //spell prevented
+                    console.log("Kouzlo " + spell.id + " vyblokováno ochranným buffem");
+                    return;
+                }
+            }
+        }
+
         if (this.id === "kal-vas-flam") {
             if (isOponent) {
                 playerInstance.beHit(default_amount);
@@ -72,18 +83,53 @@ class Spell {
             }
         } else if (this.id === "expelliarmus") {
             if (isOponent) {
-                if (accuracy > 0.9) {
+                if (accuracy > 0.9 && penalty <= 0.01) {
                     playerInstance.beStunned(1);
                 } else {
                     console.log("Nedostatečná přesnost pro expelliarmus");
                 }
             }
+        } else if (this.id === "alohomora") {
+            if (!isOponent) {
+                if (accuracy > 0.75 && penalty <= 0.01) {
+                    console.log("Alohomora: vyblokuji 3 pokusy o expeliarmus");
+                    playerInstance.prevent("expeliarmus", 3);
+                } else {
+                    console.log("Nedostatečná přesnost pro alohomora");
+                }
+            }
+        } else if (this.id === "cantis") {
+            if (isOponent) {
+                if (accuracy > 0.9 && penalty <= 0.01) {
+                    if (opts.instanceRandom < 0.5) {
+                        playerInstance.beStunned(1);
+                        console.log("Cantis stunuje na 1 kolo");
+                    } else {
+                        playerInstance.beStunned(2);
+                        console.log("Cantis stunuje na 2 kola");
+                    }
+                } else {
+                    console.log("Nedostatečná přesnost pro cantis");
+                }
+            }
         } else if (this.id === "petrificus-totalus") {
             if (isOponent) {
-                if (accuracy > 0.9) {
+                if (accuracy > 0.9 && penalty <= 0.01) {
                     playerInstance.beStunned(99);
                 } else {
                     console.log("Nedostatečná přesnost pro expelliarmus");
+                }
+            }
+        } else if (this.id === "obscuro" || this.id === "lumos") {
+            if (isOponent) {
+                if (accuracy > 0.9 && penalty <= 0.01) {
+                    if (this.id === "obscuro") {
+                        playerInstance.beBlinded('black', 2);
+                    } else if (this.id === "lumos") {
+                        playerInstance.beBlinded('white', 1);
+                    }
+                } else {
+                    console.log("Nedostatečná přesnost pro oslepeni");
                 }
             }
         } else {

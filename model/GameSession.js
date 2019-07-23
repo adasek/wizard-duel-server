@@ -31,38 +31,46 @@ class GameSession {
         }
 
         var spellsArray = [new Spell({
-                name: 'Protego',
+        name: 'Protego',
                 amount: 2,
                 type: 'defense'
-            }), new Spell({
-                name: 'Episkey',
+        }), new Spell({
+        name: 'Episkey',
                 amount: 1,
                 type: 'util'
-            }), new Spell({
-                name: 'Reparo',
+        }), new Spell({
+        name: 'Reparo',
                 amount: 2,
                 type: 'util'
-            }), new Spell({
-                name: 'Kal Vas Flam',
+        }), new Spell({
+        name: 'Kal Vas Flam',
                 amount: 1,
                 type: 'attack'
-            }), new Spell({
-                name: 'Expelliarmus',
+        }), new Spell({
+        name: 'Expelliarmus',
                 amount: 1,
                 type: 'util'
-            }), new Spell({
-                name: 'Accio',
+        }), new Spell({
+        name: 'Accio',
                 amount: 2,
                 type: 'util'
-            }), new Spell({
-                name: 'Reducto',
+        }), new Spell({
+        name: 'Reducto',
                 amount: 1,
                 type: 'attack'
-            }), new Spell({
-                name: 'Petrificus Totalus',
+        }), new Spell({
+        name: 'Petrificus Totalus',
                 amount: 1,
                 type: 'util'
-            })];
+        }), new Spell({
+        name: 'Obscuro',
+                amount: 1,
+                type: 'util'
+        }), new Spell({
+        name: 'Lumos',
+                amount: 1,
+                type: 'util'
+        })];
         // todo: load spells from spellbook.json
         // todo: amount based on the GameMode
 
@@ -282,12 +290,29 @@ GameSession.create = async function (session, opts) {
                     for (const player of gameSession.players) {
                         var spell = gameSession.getPreparedSpell(player, i);
                         
+                        //todo: isolate to PlayerInstance:
                         //am I stunned?
                         if (player.stunned > 0) {
                             console.log("Hráč " + player.name + " nemůže kouzlit.");
                             player.stunned--;
                             spell = null;
                         }
+                        //am I blinded?
+                        if (player.blindedColor) {
+                            if (player.blinded === 0) {
+                                //end of blind
+                                gameSession.sendTo(player, "rectangle", {show: false, "color": player.blindedColor});
+                                player.blindedColor = null;
+                                console.log("Hráč " + player.name + " už není oslepen! " + player.blindedColor);
+                            } else {
+                                //start of blind
+                                gameSession.sendTo(player, "rectangle", {show: true, "color": player.blindedColor});
+                                console.log("Hráč " + player.name + " je oslepen! " + player.blindedColor);
+                            }
+                            player.blinded--;
+                        }
+                        
+                        
                         console.log(player.name + " kouzlí " + (spell ? spell.name : "[nic]"));
                         gameSession.sendTo(player, "turnStart", {spell: spell, "timeout": 7000, players: gameSession.players});
                         gameSession.state = "turn";

@@ -12,9 +12,12 @@ class PlayerInstance {
         this.life = opts.life || this.lifeMax;
         this.lifeChange = 0;
         this.stunned = 0;
+        this.blinded = 0;
+        this.blindedColor = null;
 
         this.session = null;
 
+        this.prevents = {};
     }
 
     filterSpellBook(spellBook) {
@@ -53,7 +56,16 @@ class PlayerInstance {
         console.log('✚' + amount + this.name);
         this.life += amount;
         this.lifeChange += amount;
+    }
 
+    beBlinded(color, turns) {
+        if (this.defense > 0) {
+            console.log("B🛡" + this.name);
+            return;
+        }
+        console.log('B' + turns + this.name);
+        this.blinded += turns;
+        this.blindedColor = color;
     }
 
     beStunned(turns) {
@@ -65,9 +77,22 @@ class PlayerInstance {
         this.stunned += turns;
     }
 
+    prevent(spellName, turns) {
+        if (!spellName in this.prevents) {
+            this.prevents[spellName] = 0;
+        }
+        this.prevents[spellName] += turns;
+    }
+
     restartTurn() {
         this.lifeChange = 0;
         this.defense = 0;
+
+        for (var key in this.prevents) {
+            if (this.prevents[key] > 0) {
+                this.prevents[key]--;
+            }
+        }
     }
 
     toJSON() {
