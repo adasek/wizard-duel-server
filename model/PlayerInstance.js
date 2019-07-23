@@ -8,7 +8,7 @@ class PlayerInstance {
         this.id = player.id;
         this.allowedSpells = player.allowedSpells;
 
-        this.lifeMax = opts.lifeMax || 60;
+        this.lifeMax = opts.lifeMax || 50;
         this.life = opts.life || this.lifeMax;
         this.lifeChange = 0;
         this.stunned = 0;
@@ -54,6 +54,9 @@ class PlayerInstance {
 
     beHealed(amount) {
         console.log('✚' + amount + this.name);
+        if (this.life + amount > this.maxLife) {
+            amount = this.maxLife - this.life;
+        }
         this.life += amount;
         this.lifeChange += amount;
     }
