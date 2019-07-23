@@ -53,9 +53,19 @@ class Session {
                 this.send('pong');
                 break;
             case 'spellCast':
+                if (typeof (this.gameSession) === "undefined" || this.gameSession === null) {
+                    console.error("Send spellCast without gameSesssion");
+                    this.send('error', {errorType: 'spellcast without gamesession'});
+                    break;
+                }
                 this.gameSession.spellCast(this.getPlayer(), messageObject, this.send.bind(this));
                 break;
             case 'spellsSelected':
+                if (typeof (this.gameSession) === "undefined" || this.gameSession === null) {
+                    console.error("Send spellcast without gameSesssion");
+                    this.send('error', {errorType: 'spellsSelected without gamesession'});
+                    break;
+                }
                 this.gameSession.spellsSelected(this.getPlayer(), messageObject, this.send.bind(this));
                 break;
             case 'parseError':
@@ -68,12 +78,12 @@ class Session {
                 this.send('error', {errorType: 'unknownMessage'});
         }
     }
-    
-    joinSession(messageObject){
+
+    joinSession(messageObject) {
         //find my player!
         var playerName = messageObject.name || "";
         this.getPlayer(playerName);
-        
+
         for (var key in GameSession.list) {
             if (GameSession.list[key].needsPlayers()) {
                 console.log("joining session");
