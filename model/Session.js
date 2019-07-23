@@ -129,7 +129,7 @@ class Session {
             this.connection.write('\r\n');
         } catch (e) {
             //connection lost?
-            console.warn(e);
+            console.error("Session._send: " + e);
             this.unbindConnection();
             this.enqueueMessage(msg);
             return false;
@@ -138,7 +138,13 @@ class Session {
     }
 
     disconnect() {
-        this.connection.end();
+
+        try {
+            this.connection.end();
+        } catch (e) {
+            //connection lost?
+            console.error("Session.disconnect: " + e);
+        }
         this.active = false;
     }
 
